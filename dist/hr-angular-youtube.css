@@ -1,0 +1,46 @@
+youtube-player {
+    overflow: hidden;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+player-bar {
+    width: 100%;
+    position: relative;
+    height: 10px;
+    display: block;
+    background-color: rgb(70,70,70);
+}
+
+player-bar .loaded {
+    position: absolute;
+    top:0;
+    z-index: 9;
+    width: 0;
+    height: 100%;
+    background-color: rgb(143,143,143);
+}
+
+
+player-bar .played {
+    position: absolute;
+    top:0;
+    z-index: 10;
+    width: 0;
+    height: 100%;
+    background-color: red;
+}
+
+player-bar .handle {
+    /*border: 5px solid white;*/
+    background-color: white;
+    width: 16px;
+    height: 16px;
+    position: absolute;
+    left: 0;
+    z-index: 11;
+    top: -2px;
+    border-radius: 50%;
+}

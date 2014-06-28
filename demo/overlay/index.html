@@ -1,0 +1,95 @@
+<!doctype html>
+<html ng-app="demo">
+    <head>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0-beta.11/angular.min.js"></script>
+        <script src="screenfull.min.js"></script>
+        <script src="/dist/hr-angular-youtube.js"></script>
+        <link rel="stylesheet" href="/dist/hr-angular-youtube.css">
+        <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css">
+
+        <script>
+            angular.module('demo', ['hrAngularYoutube'])
+            .config(['youtubeProvider', function(youtubeProvider) {
+                // This options are the ones from here
+                // https://developers.google.com/youtube/player_parameters?playerVersion=HTML5
+                youtubeProvider.setPlayerVarOption('controls',0);
+                youtubeProvider.setPlayerVarOption('rel',0);
+                youtubeProvider.setPlayerVarOption('modestbranding',1);
+            }])
+
+            .controller('MainCtrl', ['$scope', function($scope){
+                // $scope.id = 'i_mKY2CQ9Kk';
+                // $scope.id = 'lIXRN7hBxQ8';
+                $scope.id = 'QjX9Wu-MJ-s';
+                //
+
+                $scope.fullScreen = function () {
+                    $scope.player1.requestFullscreen();
+                };
+                console.log('mainCtrl scope id ', $scope.$id);
+            }]);
+
+        </script>
+        <style>
+            .bottom-panel {
+                position: absolute;
+                bottom: 0;
+                height: 36px;
+                background: rgba(0,0,0,1);
+                width: 100%;
+                font-family: Arial, Helvetica, sans-serif;
+                font-size: 12px;
+                color: rgb(255, 255, 255);
+            }
+
+            .bottom-panel.ng-show {
+                bottom: 0;
+            }
+
+            .bottom-panel {
+                bottom: -37px;
+
+                transition: 0.5s ease-in bottom;
+            }
+            .controls {
+
+            }
+
+            .control-element {
+                float: left;
+                padding: 7px 10px;
+            }
+        </style>
+    </head>
+    <body ng-controller="MainCtrl">
+        <div style="margin-left: 200px; width: 100px">
+            <youtube-player video-id="id"  ng-model="player1">
+                <player-panel  class="bottom-panel ng-show">
+                    <player-bar></player-bar>
+                    <div class="controls">
+                        <span class="control-element">
+                            <player-play show-if-player-is="cued,unstarted,ended,paused">
+                                <i class="fa fa-play"></i>
+                            </player-play>
+                            <player-pause show-if-player-is="buffering,playing">
+                                <i class="fa fa-pause"></i>
+                            </player-pause>
+                        </span>
+                        <span class="control-element">
+                            <span player-current-time>0:00</span> of <span player-total-time>0:00</span>
+                        </span>
+                    </div>
+
+                </player-panel>
+
+            </youtube-player>
+        </div>
+        <div class="controls">
+            <button ng-show="player1.fullscreenEnabled()" ng-click="fullScreen()">Full Screen</button>
+
+            <input type="text" ng-model="id"></input>
+        </div>
+
+    </body>
+
+</html>

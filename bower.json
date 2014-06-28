@@ -1,0 +1,22 @@
+{
+  "name": "hr-angular-youtube",
+  "version": "0.0.1",
+  "authors": [
+    "Hernan Rajchert <hrajchert@gmail.com>"
+  ],
+  "description": "Youtube videos with custom configurable controls for Angular.js",
+  "main": "src/hr-angular-youtube.js",
+  "keywords": [
+    "angular",
+    "youtube"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests",
+    "demo"
+  ]
+}
