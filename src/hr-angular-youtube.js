@@ -307,6 +307,8 @@
                     ngModelCtrl = controllers[1];
 
                 var player = null;
+                var playerPromise = null;
+
                 elm.css('position','relative');
                 elm.css('display','block');
 
@@ -343,7 +345,7 @@
                     elm.css('height',convertToUnits(options.height));
                     elm.css('width',convertToUnits(options.width));
 
-                    player = youtube.loadPlayer($videoDiv, options).then(function(p) {
+                    playerPromise = youtube.loadPlayer($videoDiv, options).then(function(p) {
                         player = p;
                         youtubePlayerCtrl.setPlayer(player);
 
@@ -352,6 +354,7 @@
                         if (typeof ngModelCtrl !== 'undefined') {
                             ngModelCtrl.$setViewValue(player);
                         }
+                        return p;
                     });
 
                 };
@@ -360,10 +363,10 @@
                     if (typeof id === 'undefined') {
                         return;
                     }
-                    if (player === null) {
+                    if (playerPromise === null) {
                         createVideo();
                     } else {
-                        player.then(function(p){
+                        playerPromise.then(function(p){
                             p.loadVideoById(id);
                         });
                     }

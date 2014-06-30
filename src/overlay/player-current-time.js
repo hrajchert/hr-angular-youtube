@@ -9,7 +9,6 @@
                 youtubePlayerCtrl.getPlayer().then(function(player){
                     player.onProgress(function(){
                         elm.html(player.getHumanReadableCurrentTime());
-                        console.log(elm.html());
                     },500);
                 });
             }
