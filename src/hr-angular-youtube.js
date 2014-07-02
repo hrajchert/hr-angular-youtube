@@ -11,6 +11,12 @@
         };
     }
 
+    function generateHash() {
+        return Math.floor((1 + Math.random()) * 0x10000)
+                                   .toString(16)
+                                   .substring(1);
+    }
+
     function convertToUnits(u) {
         // If its numbers, interpret pixels
         if (typeof u === 'number' || /^\d+$/.test(u)) {
@@ -96,6 +102,9 @@
                 op.height = '100%';
 
                 this.player = new YT.Player(elmOrId, op);
+
+                this.markersByName = {};
+                // TODO: Maybe add a markersByTime for performance
             };
 
             // TODO: Inherit better than these :S once i know if this is the way I want to access the object
@@ -113,6 +122,15 @@
                     return this.player[name].apply(this.player, arguments);
                 };
             });
+
+            YoutubePlayer.prototype.setOverlayElement = function (elm) {
+                this._element = elm;
+            };
+
+            YoutubePlayer.prototype.getOverlayElement = function () {
+                return this._element;
+            };
+
 
             // TODO: See how to add a default, or if to make a full-screen directive
             YoutubePlayer.prototype.setFullScreenElement = function (elm) {
@@ -166,6 +184,7 @@
             YoutubePlayer.prototype.requestFullscreen = function () {
                 if (this.fullscreenEnabled()) {
                     screenfull.request(this._fullScreenElem);
+                    this.emit('fullscreenEnabled');
                     return true;
                 }
                 return false;
@@ -178,16 +197,57 @@
                 return false;
             };
 
-            // YoutubePlayer.prototype.on = function (name, scope, handler) {
-            //     var self = this;
-            //     var newHandler = function() {
-            //         var args = arguments;
-            //         scope.$apply(function() {
-            //             handler.apply(self.player, args);
-            //         });
-            //     };
-            //     this.player.addEventListener(name, newHandler);
-            // };
+
+            /**
+             * Its like seekTo, but fires an event when the seek is complete
+             */
+            YoutubePlayer.prototype.eventSeekTo = function (sec, allowSeekAhead) {
+                var self = this;
+                var initialTime = this.player.getCurrentTime();
+
+                // If there is a blocking marker, don't allow to seek further than it
+                angular.forEach(self.markersByName, function(marker) {
+                    // If its not blocking, we dont care
+                    if (!marker.hasOwnProperty('blockFF') || marker.blockFF === false) {
+                        return;
+                    }
+
+                    // If the marker is in the seek time, force the sec to be at the marker time
+                    if (marker.time < sec && marker.time > initialTime) {
+                        sec = marker.time;
+                    }
+                });
+
+                // Seek to sec
+                this.player.seekTo(sec, allowSeekAhead);
+
+                // Check on a time interval that the seek has been completed
+                var promise = $interval(function() {
+                    var currentTime = self.player.getCurrentTime();
+                    var seekCompleted = false;
+
+                    // This can be made in fewer lines, but its easier to debug this way
+                    // if the current time is lower than the initial time, it means you
+                    // seek back, and its now complete
+                    if (currentTime < initialTime) {
+                        seekCompleted = true;
+                    }
+                    // if not, you pushed forward, and if you are bigger than the sec you tried
+                    // to push to, then you also have complete
+                    else if ( currentTime >= sec ) {
+                        seekCompleted = true;
+                    }
+                    // There may be a third scenario where the player is paused, you pushed
+                    // forward and it complete but just next to sec.
+
+                    // Once its complete, for whatever reason, fire the event and cancel this interval
+                    if (seekCompleted) {
+                        self.emit('seekToCompleted', {newTime: sec, oldTime: initialTime});
+                        $interval.cancel(promise);
+                    }
+                }, 50);
+
+            };
 
             YoutubePlayer.prototype.startLoading = function (sec) {
                 var self = this;
@@ -195,7 +255,7 @@
                 var pauseAfterStart = function (event) {
                     if (event.data === YT.PlayerState.PLAYING) {
                         if (typeof sec === 'number') {
-                            self.player.seekTo(sec, true);
+                            self.eventSeekTo(sec, true);
                         }
                         unregister();
                         self.player.pauseVideo();
@@ -210,14 +270,12 @@
                     return;
                 }
                 var self = this;
-                this._eventHash = Math.floor((1 + Math.random()) * 0x10000)
-                                   .toString(16)
-                                   .substring(1);
+                this._eventHash = generateHash();
                 var events = ['onStateChange', 'onPlaybackQualityChange', 'onPlaybackRateChange',
                               'onError', 'onApiChange', 'onReady'];
                 angular.forEach(events, function(name) {
                     self.player.addEventListener(name, function(data) {
-                        $rootScope.$emit(self._eventHash + name, data);
+                        self.emit(name,data);
                     });
                 });
                 this._eventsInitialized = true;
@@ -231,6 +289,86 @@
                     handler(eventData);
                 });
             };
+
+            YoutubePlayer.prototype.emit = function(name, data) {
+                $rootScope.$emit(this._eventHash + name, data);
+            };
+
+            YoutubePlayer.prototype._initializeMarkerListener = function () {
+                if ( this._markerListener ) {
+                    return;
+                }
+                var launchMarker = function (marker) {
+                    // If the marker has a handler, call it
+                    if (marker.hasOwnProperty('handler')) {
+                        marker.handler.apply(marker);
+                    }
+                    // Emit an event with the marker launch
+                    self.emit('markerLaunch', marker);
+                };
+
+                var self = this;
+                var lastMarkerTime = 0;
+                this.onProgress(function() {
+                    var currentTime = self.getCurrentTime();
+                    // If the video was seek to a previous time than the last marker,
+                    // activate it once again
+                    if (lastMarkerTime > currentTime) {
+                        lastMarkerTime = currentTime;
+                    }
+
+                    var newLastTime = lastMarkerTime;
+                    angular.forEach(self.markersByName, function(marker) {
+                        // If the marker time has past and we haven't launched this marker yet
+                        if (marker.time < currentTime && marker.time > lastMarkerTime) {
+                            launchMarker(marker);
+                            newLastTime = Math.max(newLastTime, marker.time);
+                        }
+                    });
+                    lastMarkerTime = newLastTime;
+                });
+
+                this.on('seekToCompleted', function(seekTime){
+
+                    angular.forEach(self.markersByName, function(marker) {
+                        if (!marker.hasOwnProperty('launchOnSeek') || marker.launchOnSeek === false) {
+                            return;
+                        }
+                        if (marker.time <= seekTime.newTime && marker.time > seekTime.oldTime) {
+                            launchMarker(marker);
+                        }
+                    });
+                    lastMarkerTime = seekTime.newTime;
+
+                });
+
+                this._markerListener = true;
+            };
+
+            YoutubePlayer.prototype.addMarker = function (marker) {
+                this._initializeMarkerListener();
+
+                if (!marker.hasOwnProperty('name')) {
+                    marker.name = generateHash();
+                }
+                if (marker.hasOwnProperty('blockFF') && marker.blockFF === true) {
+                    marker.launchOnSeek = true;
+                }
+
+                this.markersByName[marker.name] = marker;
+                this.emit('markerAdd', marker);
+            };
+
+            YoutubePlayer.prototype.removeMarker = function (marker) {
+                delete this.markersByName[marker.name];
+            };
+            YoutubePlayer.prototype.getMarkers = function () {
+                return this.markersByName;
+            };
+            YoutubePlayer.prototype.getMarker = function (name) {
+                return this.markersByName[name];
+            };
+
 
 
             // Youtube callback when API is ready
@@ -268,7 +406,10 @@
         return {
             restrict: 'EA',
             require: ['youtubePlayer', '?ngModel'],
-            template: '<div class="youtubeOuterDiv"><div class="youtubeInnerDiv"></div><div class="youtubeOverlay" ng-transclude=""></div></div>',
+            template: '<div class="youtubeOuterDiv">' +
+                      '  <div class="youtubeInnerDiv"></div>' +
+                      '  <div class="youtubeOverlay" ng-transclude=""></div>' +
+                      '</div>',
             scope: {
                 videoId: '=',
             },
@@ -313,10 +454,12 @@
                 elm.css('display','block');
 
                 // Save the overlay element in the controller so child directives can use it
+                // TODO: check this out again
                 youtubePlayerCtrl.setOverlayElement(elm);
 
                 var $videoDiv = elm[0].querySelector('.youtubeInnerDiv');
                 var $outerDiv = angular.element(elm[0].querySelector('.youtubeOuterDiv'));
+                var $overlayElm = angular.element(elm[0].querySelector('.youtubeOverlay'));
 
                 $outerDiv.css('width', '100%');
                 $outerDiv.css('height', '100%');
@@ -350,6 +493,7 @@
                         youtubePlayerCtrl.setPlayer(player);
 
                         player.setFullScreenElement($outerDiv[0]);
+                        player.setOverlayElement($overlayElm);
 
                         if (typeof ngModelCtrl !== 'undefined') {
                             ngModelCtrl.$setViewValue(player);

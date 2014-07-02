@@ -1,17 +1,17 @@
 /* global angular */
 (function(angular) {
     angular.module('hrAngularYoutube')
-    .directive('playerCurrentTime',  function() {
+    .directive('playerVolumeHorizontal',  function() {
         return {
-            restrict: 'EA',
+            restrict: 'E',
             require: '^youtubePlayer',
+            template: '<div class="ng-transclude"></div><div class="hr-yt-volume-hr-bar"></div>',
+            transclude: true,
             link: function(scope, elm, attrs,youtubePlayerCtrl) {
+
                 youtubePlayerCtrl.getPlayer().then(function(player){
-                    player.onProgress(function(){
-                        elm.html(player.getHumanReadableCurrentTime());
-                    },250);
-                    player.on('seekToCompleted', function(){
-                        elm.html(player.getHumanReadableCurrentTime());
+                    elm.on('click', function() {
+                        player.playVideo();
                     });
                 });
             }

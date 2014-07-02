@@ -27,7 +27,7 @@ gulp.task('process-styles', function() {
 
 gulp.task('watch', function() {
     gulp.watch('./src/**/*.js', ['process-scripts']);
-    gulp.watch('./assets/**/*.js', ['process-styles']);
+    gulp.watch('./assets/**/*.css', ['process-styles']);
 });
 
 gulp.task('default', ['process-scripts', 'process-styles', 'watch']);

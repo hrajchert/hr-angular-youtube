@@ -17,20 +17,90 @@
                 youtubeProvider.setPlayerVarOption('modestbranding',1);
             }])
 
-            .controller('MainCtrl', ['$scope', function($scope){
+            .controller('MainCtrl', ['$scope', '$compile','$timeout', function($scope, $compile, $timeout){
+                // Long video 9min
                 // $scope.id = 'i_mKY2CQ9Kk';
-                // $scope.id = 'lIXRN7hBxQ8';
+                // Medium 1min
                 $scope.id = 'QjX9Wu-MJ-s';
-                //
+                // Short video 11 sec
+                // $scope.id = 'lIXRN7hBxQ8';
+
+                $scope.$watch('player1', function(player) {
+                    if (typeof player === 'object') {
+                        player.mute();
+                        player.addMarker({
+                            time:10,
+                            template: '<div class="example-marker">This only shows when the video passes normally</div>',
+                            handler: function() {
+                                var elm = $compile(this.template)($scope);
+                                player.getOverlayElement().append(elm);
+                                $timeout(function() {
+                                    elm.remove();
+                                }, 3000);
+                            }
+                        });
+
+                        player.addMarker({
+                            time:15,
+                            template: '<div class="example-marker">This shows even if you seek trough</div>',
+                            launchOnSeek: true,
+                            handler: function () {
+                                var elm = $compile(this.template)($scope);
+                                player.getOverlayElement().append(elm);
+                                $timeout(function() {
+                                    elm.remove();
+                                }, 3000);
+                            }
+                        });
+
+                        player.addMarker({
+                            time:30,
+                            template: '<div class="full-screen-marker-example">This blocks your seek, but only once' +
+                                      '<button ng-click="closeMarker()">close</button></div>',
+                            launchOnSeek: true,
+                            fireOnce: true,
+                            handler: function () {
+                                var elm = $compile(this.template)($scope);
+                                player.getOverlayElement().append(elm);
+                                $scope.closeMarker = function() {
+                                    elm.remove();
+                                    player.playVideo();
+                                };
+                                player.pauseVideo();
+                            }
+                        });
+                    }
+                });
 
                 $scope.fullScreen = function () {
                     $scope.player1.requestFullscreen();
                 };
+
+
                 console.log('mainCtrl scope id ', $scope.$id);
             }]);
 
         </script>
         <style>
+            player-bar {
+                background-color: rgb(70,70,70);
+            }
+
+            player-bar .hr-yt-loaded {
+                background-color: rgb(143,143,143);
+            }
+            player-bar .hr-yt-played {
+                background-color: red;
+            }
+            player-bar .hr-yt-handle {
+                background-color: white;
+            }
+
+
+            .hr-yt-volume-hr-bar {
+                background-color: rgb(70,70,70);;
+
+            }
             .bottom-panel {
                 position: absolute;
                 bottom: 0;
@@ -51,13 +121,39 @@
 
                 transition: 0.5s ease-in bottom;
             }
-            .controls {
-
-            }
 
             .control-element {
                 float: left;
                 padding: 7px 10px;
+            }
+
+            .example-marker {
+                position: absolute;
+                right: 25px;
+                top: 40px;
+                width: 300px;
+                height: 70px;
+                background-color: rgba(0,0,0,0.8);
+                color: white;
+                padding: 10px;
+            }
+            .full-screen-marker-example {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: black;
+                color: white;
+                padding: 10px;
+                z-index: 20;
+            }
+            .hr-yt-marker {
+                position: absolute;
+                height: 100%;
+                width: 2px;
+                z-index: 14;
+                background-color: white;
             }
         </style>
     </head>
@@ -76,7 +172,12 @@
                             </player-pause>
                         </span>
                         <span class="control-element">
-                            <span player-current-time>0:00</span> of <span player-total-time>0:00</span>
+                            <player-volume-horizontal>
+                                <i class="fa fa-volume-up"></i>
+                            </player-volume-horizontal>
+                        </span>
+                        <span class="control-element">
+                            <span player-current-time>0:00</span> / <span player-total-time>0:00</span>
                         </span>
                     </div>
 

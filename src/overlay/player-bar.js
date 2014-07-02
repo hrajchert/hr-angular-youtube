@@ -1,14 +1,15 @@
 /* global angular, YT */
 (function(angular) {
     angular.module('hrAngularYoutube')
-    .directive('playerBar',  function() {
+    .directive('playerBar', ['$compile', function($compile) {
         return {
             restrict: 'E',
             require: '^youtubePlayer',
-            template: '<div class="played"></div><div class="loaded"></div><div class="handle"></div>',
+            template: '<div class="hr-yt-played"></div>' +
+                      '<div class="hr-yt-loaded"></div>' +
+                      '<div class="hr-yt-handle"></div>',
             link: function(scope, elm, attrs, youtubePlayerCtrl) {
                 youtubePlayerCtrl.getPlayer().then(function(player){
-                    player.mute();
 
                     var duration = player.getDuration();
                     var $played = angular.element(elm.children()[0]);
@@ -49,6 +50,7 @@
                     var $videoElm = youtubePlayerCtrl.getVideoElement();
                     var $document = angular.element(document);
 
+
                     elm.on('mousedown', function(e) {
                         // If it wasn't a left click, end
                         if (e.button !== 0) {
@@ -80,39 +82,79 @@
                         };
 
                         var documentMouseMove = function(event) {
-                            var sec = getSecondFromPageX(event.x);
-                            // player.seekTo(sec, false);
-                            updateProgress(sec);
+                            scope.$apply(function(){
+                                var sec = getSecondFromPageX(event.x);
+                                // player.seekTo(sec, false);
+                                updateProgress(sec);
+                            });
+
                         };
 
                         var documentMouseUp = function(event) {
-                            var sec = getSecondFromPageX(event.x);
+                            scope.$apply(function() {
+                                var sec = getSecondFromPageX(event.x);
 
+                                // Remove the event listeners for the drag and drop
+                                $document.off('mousemove', documentMouseMove );
+                                $document.off('mouseup', documentMouseUp);
+                                // remove the div that was blocking the events of the iframe
+                                $blocker.remove();
 
-                            // Remove the event listeners for the drag and drop
-                            $document.off('mousemove', documentMouseMove );
-                            $document.off('mouseup', documentMouseUp);
-                            // remove the div that was blocking the events of the iframe
-                            $blocker.remove();
+                                if (playStatus === YT.PlayerState.PLAYING || playStatus === YT.PlayerState.PAUSED) {
+                                    // Load it in the player
+                                    player.eventSeekTo(sec, true);
+                                    // Force update progress because seekTo takes its time
+                                    updateProgress(sec);
+                                } else {
+                                    player.startLoading(sec);
+                                }
 
-                            if (playStatus === YT.PlayerState.PLAYING || playStatus === YT.PlayerState.PAUSED) {
-                                // Load it in the player
-                                player.seekTo(sec, true);
-                                // Force update progress because seekTo takes its time
-                                updateProgress(sec);
-                            } else {
-                                player.startLoading(sec);
-                            }
+                                // If it was playinf before, play now as well
+                                if (playStatus === YT.PlayerState.PLAYING) {
+                                    player.playVideo();
+                                }
+                            });
 
-                            // If it was playinf before, play now as well
-                            if (playStatus === YT.PlayerState.PLAYING) {
-                                player.playVideo();
-                            }
                         };
 
                         $document.on('mousemove', documentMouseMove );
                         $document.on('mouseup', documentMouseUp);
                     });
+                    // Add markers  to the bar
+                    var addMarker = function(marker) {
+
+                        var $markerElm = angular.element('<span class="hr-yt-marker" '+
+                                                         '      marker-name="'+marker.name+'">'+
+                                                         '</span>');
+                        elm.append($markerElm);
+                        $compile($markerElm)(scope);
+                    };
+                    // Existing markers
+                    angular.forEach(player.getMarkers(), addMarker);
+                    // New markers
+                    player.on('markerAdd', addMarker );
+
+                });
+            }
+        };
+    }])
+    .directive('hrYtMarker',  function() {
+        return {
+            restrict: 'C',
+            require: '^youtubePlayer',
+            link: function(scope, elm, attrs,youtubePlayerCtrl) {
+                youtubePlayerCtrl.getPlayer().then(function(player){
+                    var duration = player.getDuration();
+                    var marker = player.getMarker(attrs.markerName);
+                    var relativeTime = 100 * marker.time / duration;
+
+                    var adjustLeftPosition = function () {
+                        var x = relativeTime * elm.parent()[0].clientWidth / 100;
+                        elm.css('left', x + 'px');
+                    };
+                    adjustLeftPosition();
+                    player.on('fullscreenEnabled', adjustLeftPosition);
+                    angular.element(window).bind('resize', adjustLeftPosition);
 
                 });
             }
