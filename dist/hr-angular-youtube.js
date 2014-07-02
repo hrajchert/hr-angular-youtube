@@ -648,8 +648,8 @@
 
                         var documentMouseMove = function(event) {
                             scope.$apply(function(){
-                                var sec = getSecondFromPageX(event.x);
-                                // player.seekTo(sec, false);
+                                var sec = getSecondFromPageX(event.pageX);
+                                // player.eventSeekTo(sec, false);
                                 updateProgress(sec);
                             });
 
@@ -657,7 +657,7 @@
 
                         var documentMouseUp = function(event) {
                             scope.$apply(function() {
-                                var sec = getSecondFromPageX(event.x);
+                                var sec = getSecondFromPageX(event.pageX);
 
                                 // Remove the event listeners for the drag and drop
                                 $document.off('mousemove', documentMouseMove );
