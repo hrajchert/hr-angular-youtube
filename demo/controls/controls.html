@@ -1,0 +1,9 @@
+<div ng-controller="ControlsDemoCtrl">
+    <youtube-player width="100%" keep-aspect-ratio video-id="id" ng-model="player1">
+    </youtube-player>
+    <div class="controls">
+        <button ng-click="player1.playVideo()">Play</button>
+        <button ng-click="player1.pauseVideo()">Pause</button>
+        <input type="text" ng-model="id"></input>
+    </div>
+</div>

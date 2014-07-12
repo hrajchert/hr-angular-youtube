@@ -1,34 +1,12 @@
 <!doctype html>
-<html ng-app="demo">
+<html ng-app="demoControls">
     <head>
         <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0-beta.11/angular.min.js"></script>
-        <script src="/src/hr-angular-youtube.js"></script>
-        <script>
-            angular.module('demo', ['hrAngularYoutube'])
-            .config(['youtubeProvider', function(youtubeProvider) {
-                // This options are the ones from here
-                // https://developers.google.com/youtube/player_parameters?playerVersion=HTML5
-                youtubeProvider.setPlayerVarOption('controls',0);
-                youtubeProvider.setPlayerVarOption('showinfo',false);
-                youtubeProvider.setPlayerVarOption('modestbranding',1);
-                youtubeProvider.setPlayerVarOption('disablekb',1);
-            }])
+        <script src="/dist/hr-angular-youtube.js"></script>
+        <script src="controls.js"></script>
 
-            .controller('MainCtrl', ['$scope', function($scope){
-                $scope.id = 'i_mKY2CQ9Kk';
-            }]);
-
-        </script>
     </head>
-    <body ng-controller="MainCtrl">
-        <youtube-player video-id="id" ng-model="player1">
-        </youtube-player>
-        <div class="controls">
-            <button ng-click="player1.playVideo()">Play</button>
-            <button ng-click="player1.pauseVideo()">Pause</button>
-            <input type="text" ng-model="id"></input>
-        </div>
-
+    <body>
+        <ng-include src="'controls.html'"></ng-include>
     </body>
-
 </html>

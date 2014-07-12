@@ -1,0 +1,33 @@
+{
+  "name": "hr-angular-youtube",
+  "version": "0.0.1",
+  "description": "Angular Youtube ===============",
+  "main": "gulpfile.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+  },
+  "devDependencies": {
+    "gulp": "~3.8.1",
+    "gulp-autoprefixer": "~0.0.7",
+    "gulp-concat": "~2.2.0",
+    "gulp-minify-css": "~0.3.5",
+    "gulp-rename": "~1.2.0",
+    "gulp-uglify": "~0.3.1",
+    "mddoc": "~0.0.2",
+    "when": "~3.3.1"
+
+  },
+  "private" : true,
+  "repository": {
+    "type": "git",
+    "url": "https://hrajchert@github.com/hrajchert/hr-angular-youtube.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hrajchert/hr-angular-youtube/issues"
+  },
+  "homepage": "https://github.com/hrajchert/hr-angular-youtube"
+}

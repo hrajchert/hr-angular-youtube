@@ -1,0 +1,28 @@
+<div ng-controller="OverlayDemoCtrl">
+        <youtube-player width="100%" keep-aspect-ratio video-id="id"  ng-model="player1">
+            <player-panel  class="bottom-panel ng-show">
+                <player-bar></player-bar>
+                <div class="controls">
+                    <span class="control-element">
+                        <player-play show-if-player-is="cued,unstarted,ended,paused">
+                            <i class="fa fa-play"></i>
+                        </player-play>
+                        <player-pause show-if-player-is="buffering,playing">
+                            <i class="fa fa-pause"></i>
+                        </player-pause>
+                    </span>
+                    <span class="control-element">
+                        <player-volume-horizontal>
+                            <i class="fa fa-volume-up"></i>
+                        </player-volume-horizontal>
+                    </span>
+                    <span class="control-element">
+                        <span player-current-time>0:00</span> / <span player-total-time>0:00</span>
+                    </span>
+                </div>
+            </player-panel>
+        </youtube-player>
+    <div class="controls">
+        <button ng-show="player1.fullscreenEnabled()" ng-click="fullScreen()">Full Screen</button>
+    </div>
+</div>
