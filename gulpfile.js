@@ -1,9 +1,10 @@
-var gulp = require('gulp'),
-    concat = require('gulp-concat'),
-    prefix = require('gulp-autoprefixer'),
-    uglify = require('gulp-uglify'),
+var gulp      = require('gulp'),
+    concat    = require('gulp-concat'),
+    prefix    = require('gulp-autoprefixer'),
+    uglify    = require('gulp-uglify'),
     minifycss = require('gulp-minify-css'),
-    rename = require('gulp-rename');
+    rimraf    = require('gulp-rimraf'),
+    rename    = require('gulp-rename');
 
 var fs = require('fs'),
     when = require('when');
@@ -44,7 +45,7 @@ gulp.task('process-styles', function() {
         .pipe(gulp.dest('./dist/'));
 });
 
-gulp.task('docs-cp', function(cb) {
+gulp.task('demo-cp', function(cb) {
     loadOptions().then(function(options) {
         gulp.src('./demo/**/*').
             pipe(gulp.dest(options.pagesDir + '/demo')).
@@ -100,12 +101,26 @@ gulp.task('docs-mddoc', function(cb) {
     });
 });
 
+gulp.task('docs-clean', function(cb) {
+    loadOptions().then(function(options) {
+        gulp.src(options.pagesDir + '/**/*.*', { read: false })
+        .pipe(rimraf({force:true}))
+        // For some reason I need to add a dest, or no end is triggered
+        .pipe(gulp.dest(options.pagesDir))
+        .on('end', cb);
+    });
+});
 
-gulp.task('docs', ['docs-cp', 'docs-dist-cp', 'docs-mddoc'], function() {
+gulp.task('build-docs', ['demo-cp', 'docs-dist-cp', 'docs-mddoc']);
+
+gulp.task('docs',['docs-clean'], function(){
+    return gulp.start('build-docs');
 });
 
 gulp.task('watch', function() {
-    gulp.watch('./src/**/*.js', ['process-scripts']);
+    // This should be process script, but for some reason is not updating :(
+    //    gulp.watch('./src/**/*.js', ['process-scripts']);
+    gulp.watch('./src/**/*.js', ['process-scripts','docs']);
     gulp.watch('./assets/**/*.css', ['process-styles']);
     gulp.watch('./demo/**/*', ['docs']);
     gulp.watch(['./docs/**/*', '!./docs/custom-generator/bower_components/**'], ['docs']);

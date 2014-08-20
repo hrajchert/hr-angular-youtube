@@ -24,6 +24,18 @@ angular.module('demo')
     $http.get('demo/overlay/overlay.css').then(function(ans){
         $scope.overlaycss = ans.data;
     });
+}])
+
+.controller('MarkerDemoCtrlRemoveThis', ['$http','$scope', function($http, $scope) {
+    $http.get('demo/marker/marker.html').then(function(ans){
+        $scope.html = ans.data;
+    });
+    $http.get('demo/marker/marker.js').then(function(ans){
+        $scope.js = ans.data;
+    });
+    $http.get('demo/marker/marker.css').then(function(ans){
+        $scope.css = ans.data;
+    });
 }]);
 
 

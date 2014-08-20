@@ -101,6 +101,13 @@
                 op.width = '100%';
                 op.height = '100%';
 
+                if (this.fullscreenEnabled) {
+                    var self = this;
+                    document.addEventListener(screenfull.raw.fullscreenchange, function() {
+                        self.emit('fullscreenchange');
+                    });
+                }
+
                 this.player = new YT.Player(elmOrId, op);
 
                 this.markersByName = {};
@@ -189,6 +196,28 @@
                 }
                 return false;
             };
+
+            YoutubePlayer.prototype.toggleFullscreen = function () {
+                if (this.fullscreenEnabled()) {
+                    var isFullscreen = screenfull.isFullscreen;
+                    screenfull.toggle(this._fullScreenElem);
+                    if (isFullscreen) {
+                        this.emit('fullscreenDisabled');
+                    } else {
+                        this.emit('fullscreenEnabled');
+                    }
+                    return true;
+                }
+                return false;
+            };
+
+            YoutubePlayer.prototype.isFullscreen = function () {
+                if (this.fullscreenEnabled()) {
+                    return screenfull.isFullscreen;
+                }
+                return false;
+            };
+
 
             YoutubePlayer.prototype.fullscreenEnabled = function () {
                 if (typeof screenfull !== 'undefined') {
@@ -411,7 +440,7 @@
                       '  <div class="youtubeOverlay" ng-transclude=""></div>' +
                       '</div>',
             scope: {
-                videoId: '=',
+                videoId: '='
             },
             transclude: true,
             controller: ['$scope','$q', function($scope, $q) {

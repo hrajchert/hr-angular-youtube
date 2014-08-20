@@ -101,6 +101,13 @@
                 op.width = '100%';
                 op.height = '100%';
 
+                if (this.fullscreenEnabled) {
+                    var self = this;
+                    document.addEventListener(screenfull.raw.fullscreenchange, function() {
+                        self.emit('fullscreenchange');
+                    });
+                }
+
                 this.player = new YT.Player(elmOrId, op);
 
                 this.markersByName = {};
@@ -189,6 +196,28 @@
                 }
                 return false;
             };
+
+            YoutubePlayer.prototype.toggleFullscreen = function () {
+                if (this.fullscreenEnabled()) {
+                    var isFullscreen = screenfull.isFullscreen;
+                    screenfull.toggle(this._fullScreenElem);
+                    if (isFullscreen) {
+                        this.emit('fullscreenDisabled');
+                    } else {
+                        this.emit('fullscreenEnabled');
+                    }
+                    return true;
+                }
+                return false;
+            };
+
+            YoutubePlayer.prototype.isFullscreen = function () {
+                if (this.fullscreenEnabled()) {
+                    return screenfull.isFullscreen;
+                }
+                return false;
+            };
+
 
             YoutubePlayer.prototype.fullscreenEnabled = function () {
                 if (typeof screenfull !== 'undefined') {
@@ -411,7 +440,7 @@
                       '  <div class="youtubeOverlay" ng-transclude=""></div>' +
                       '</div>',
             scope: {
-                videoId: '=',
+                videoId: '='
             },
             transclude: true,
             controller: ['$scope','$q', function($scope, $q) {
@@ -750,6 +779,27 @@
 })(angular);
 
 
+/* global angular */
+(function(angular) {
+    angular.module('hrAngularYoutube')
+    .directive('playerFullscreen',  function() {
+        return {
+            restrict: 'E',
+            require: '^youtubePlayer',
+            template: '<div style="display: inherit" ng-transclude=""></div>',
+            transclude: true,
+            link: function(scope, elm, attrs,youtubePlayerCtrl) {
+                youtubePlayerCtrl.getPlayer().then(function(player){
+                    elm.on('click', function() {
+                        player.toggleFullscreen();
+                    });
+                });
+            }
+        };
+    });
+})(angular);
+
+
 /* global angular, YT */
 (function(angular) {
     angular.module('hrAngularYoutube')
@@ -942,7 +992,52 @@
                 });
             }
         };
-    }]);
+    }])
+
+    .directive('showIfFullscreenEnabled', ['$animate', function($animate) {
+        return {
+            restrict: 'A',
+            require: '^youtubePlayer',
+            link: function(scope, elm, attrs,youtubePlayerCtrl) {
+                // By default hide
+                $animate.addClass(elm, 'ng-hide');
+                youtubePlayerCtrl.getPlayer().then(function(player){
+                    if (player.fullscreenEnabled()) {
+                        $animate.removeClass(elm, 'ng-hide');
+                    } else {
+                        $animate.addClass(elm, 'ng-hide');
+                    }
+                });
+            }
+        };
+    }])
+    .directive('showIfFullscreen', ['$animate', function($animate) {
+        return {
+            restrict: 'A',
+            require: '^youtubePlayer',
+            link: function(scope, elm, attrs,youtubePlayerCtrl) {
+                // By default hide
+                $animate.addClass(elm, 'ng-hide');
+                youtubePlayerCtrl.getPlayer().then(function(player){
+                    var hideOrShow = function () {
+                        var show = player.isFullscreen();
+                        if (attrs.showIfFullscreen === 'true') {
+                            show = !show;
+                        }
+
+                        if ( show ) {
+                            $animate.removeClass(elm, 'ng-hide');
+                        } else {
+                            $animate.addClass(elm, 'ng-hide');
+                        }
+                    };
+                    hideOrShow();
+                    player.on('fullscreenchange', hideOrShow);
+                });
+            }
+        };
+    }])
+    ;
 
 })(angular);
 

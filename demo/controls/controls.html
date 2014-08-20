@@ -4,6 +4,7 @@
     <div class="controls">
         <button ng-click="player1.playVideo()">Play</button>
         <button ng-click="player1.pauseVideo()">Pause</button>
+        <button ng-show="player1.fullscreenEnabled()" ng-click="player1.requestFullscreen()">Full Screen</button>
         <input type="text" ng-model="id"></input>
     </div>
 </div>

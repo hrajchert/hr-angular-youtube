@@ -1,5 +1,5 @@
 /* global angular */
-angular.module('demo', ['ngRoute','demoOverlay','demoControls'])
+angular.module('demo', ['ngRoute','demoOverlay','demoControls', 'demoMarker'])
 // TODO: mgmgmg, ngroute here?
 
 //angular.module('demo', ['demoOverlay', 'demoControls'])
@@ -7,7 +7,8 @@ angular.module('demo', ['ngRoute','demoOverlay','demoControls'])
 .config(['$routeProvider', function($routeProvider) {
     $routeProvider
     .when('/', {
-        template: 'This- is hr-angular-youtube more to come',
+        templateUrl: 'home.html',
+
     })
     .when('/demo/basic', {
         templateUrl: 'demo-basic.html',
@@ -22,6 +23,10 @@ angular.module('demo', ['ngRoute','demoOverlay','demoControls'])
     .when('/demo/overlay', {
         templateUrl: 'demo-overlay.html',
         controller: 'OverlayDemoCtrlRemoveThis'
+    })
+    .when('/demo/marker', {
+        templateUrl: 'demo-marker.html',
+        controller: 'MarkerDemoCtrlRemoveThis'
     });
 }]);
 

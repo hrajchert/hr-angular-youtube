@@ -15,6 +15,7 @@ module.exports = function(mddoc) {
             '/dist/hr-angular-youtube.js',
             '/demo/controls/controls.js',
             '/demo/overlay/overlay.js',
+            '/demo/marker/marker.js',
             '/demo/assets/screenfull.min.js'
         ],
         'styles'  : [
@@ -42,9 +43,17 @@ module.exports = function(mddoc) {
                     {
                         'name' : 'Overlay',
                         'link' : '/demo/overlay'
+                    },
+                    {
+                        'name' : 'Marker',
+                        'link' : '/demo/marker'
                     }
                 ]
             }
         ]
     });
+
+    mddoc.addGenerator('mddoc-code-browser-generator', {
+    });
+
 };
