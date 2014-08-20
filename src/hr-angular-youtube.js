@@ -101,7 +101,7 @@
                 op.width = '100%';
                 op.height = '100%';
 
-                if (this.fullscreenEnabled) {
+                if (this.fullscreenEnabled()) {
                     var self = this;
                     document.addEventListener(screenfull.raw.fullscreenchange, function() {
                         self.emit('fullscreenchange');
