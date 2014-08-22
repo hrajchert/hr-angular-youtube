@@ -7,62 +7,59 @@ angular.module('demoMarker', ['hrAngularYoutube'])
     youtubeProvider.setPlayerVarOption('rel',0);
     youtubeProvider.setPlayerVarOption('modestbranding',1);
 }])
-.controller('MarkerDemoCtrl', ['$scope', '$compile','$timeout', function($scope, $compile, $timeout){
-    // Long video 9min
-    $scope.id = 'i_mKY2CQ9Kk';
-    // Medium 1min
-    // $scope.id = 'QjX9Wu-MJ-s';
-    // Short video 11 sec
-    // $scope.id = 'lIXRN7hBxQ8';
+
+
+.controller('MarkerDemoCtrl', ['$scope','YoutubeMarker','YoutubeTemplateMarker', function($scope,YoutubeMarker,YoutubeTemplateMarker){
+    $scope.id = 'QjX9Wu-MJ-s';
 
     $scope.$watch('player1', function(player) {
-        if (typeof player === 'object') {
-            player.mute();
-            player.addMarker({
-                time:10,
-                template: '<div class="example-marker">This only shows when the video passes normally</div>',
-                handler: function() {
-                    var elm = $compile(this.template)($scope);
-                    player.getOverlayElement().append(elm);
-                    $timeout(function() {
-                        elm.remove();
-                    }, 3000);
-                }
-            });
 
-            player.addMarker({
-                time:15,
-                template: '<div class="example-marker">This shows even if you seek trough</div>',
-                launchOnSeek: true,
-                handler: function () {
-                    var elm = $compile(this.template)($scope);
-                    player.getOverlayElement().append(elm);
-                    $timeout(function() {
-                        elm.remove();
-                    }, 3000);
-                }
-            });
-
-            player.addMarker({
-                time:30,
-                template: '<div class="full-screen-marker-example">This blocks your seek, but only once' +
-                          '<button ng-click="closeMarker()">close</button></div>',
-                launchOnSeek: true,
-                fireOnce: true,
-                handler: function () {
-                    var elm = $compile(this.template)($scope);
-                    player.getOverlayElement().append(elm);
-                    $scope.closeMarker = function() {
-                        elm.remove();
-                        player.playVideo();
-                    };
-                    player.pauseVideo();
-                }
-            });
+        if (typeof player === 'undefined') {
+            return;
         }
+
+        player.mute();
+        player.addMarker(new YoutubeMarker({
+            time: 3,
+            showMarker: false,
+            handler: function() {
+                console.log('Basic marker!');
+            }
+        }));
+
+        player.addMarker(new YoutubeTemplateMarker(player, {
+            time: 10,
+            duration: 3,
+            template: '<div class="example-marker">This only shows when the video passes normally</div>',
+        }));
+
+        player.addMarker(new YoutubeTemplateMarker(player, {
+            time: 15,
+            duration: 3,
+            launchOnSeek: true,
+            template: '<div class="example-marker">This shows even if you seek trough</div>'
+        }));
+
+        player.addMarker(new YoutubeTemplateMarker(player, {
+            time: 30,
+            blockFF: true,
+            fireOnce: true,
+            template: '<div class="full-screen-marker-example">This blocks your seek, but only once' +
+                      '<button ng-click="closeMarker()">close</button></div>',
+            link: function (player, $scope) {
+                console.log('linkin!');
+                var self = this;
+                $scope.closeMarker = function() {
+                    console.log('close!');
+                    self.destroy();
+                    player.playVideo();
+                };
+                player.pauseVideo();
+            }
+
+        }));
+
     });
 
-    $scope.fullScreen = function () {
-        $scope.player1.requestFullscreen();
-    };
+
 }]);

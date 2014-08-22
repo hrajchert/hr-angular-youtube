@@ -1,0 +1,6 @@
+.hr-yt-marker {
+    position: absolute;
+    height: 100%;
+    width: 2px;
+    z-index: 14;
+}

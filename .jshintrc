@@ -17,6 +17,6 @@
     "maxparams": 4,
     "maxdepth": 3,
     "maxcomplexity": 10,
-    "maxlen": 120,
+    "maxlen": 140,
     "-W065":true
 }

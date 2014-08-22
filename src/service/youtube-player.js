@@ -1,29 +1,12 @@
 /* global angular, YT, screenfull */
 (function(angular) {
 
-    // Add a default handler to avoid missing the event. This can happen if you add the script manually,
-    // which can be useful for performance
-    if (typeof window.onYouTubeIframeAPIReady === 'undefined') {
-        window.onYouTubeIframeAPIReady = function () {
-            setTimeout(function(){
-                window.onYouTubeIframeAPIReady();
-            }, 100);
-        };
-    }
-
     function generateHash() {
         return Math.floor((1 + Math.random()) * 0x10000)
                                    .toString(16)
                                    .substring(1);
     }
 
-    function convertToUnits(u) {
-        // If its numbers, interpret pixels
-        if (typeof u === 'number' || /^\d+$/.test(u)) {
-            return u + 'px';
-        }
-        return u;
-    }
 
     function youtubeReadableTime (t) {
         t = Math.floor(t);
@@ -38,17 +21,9 @@
         }
     }
 
-    angular.module('hrAngularYoutube', [])
 
-    .run(['youtube', function (youtube) {
-        if (youtube.getAutoLoad()) {
-            // Add the iframe api to the dom
-            var tag = document.createElement('script');
-            tag.src = '//www.youtube.com/iframe_api';
-            var firstScriptTag = document.getElementsByTagName('script')[0];
-            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-        }
-    }])
+    angular.module('hrAngularYoutube')
+
     .provider('youtube', function youtubeProvider () {
 
         var defaultOptions = {
@@ -237,12 +212,12 @@
                 // If there is a blocking marker, don't allow to seek further than it
                 angular.forEach(self.markersByName, function(marker) {
                     // If its not blocking, we dont care
-                    if (!marker.hasOwnProperty('blockFF') || marker.blockFF === false) {
+                    if (marker.blockFF === false) {
                         return;
                     }
 
                     // If the marker is in the seek time, force the sec to be at the marker time
-                    if (marker.time < sec && marker.time > initialTime) {
+                    if (marker.startedIn(initialTime, sec)) {
                         sec = marker.time;
                     }
                 });
@@ -324,34 +299,42 @@
             };
 
             YoutubePlayer.prototype._initializeMarkerListener = function () {
+                // Only initialize markers once
                 if ( this._markerListener ) {
                     return;
                 }
-                var launchMarker = function (marker) {
-                    // If the marker has a handler, call it
-                    if (marker.hasOwnProperty('handler')) {
-                        marker.handler.apply(marker);
+                this._markerListener = true;
+
+                var runMarker = function (marker) {
+                    if (marker.start()) {
+                        // Emit an event with the marker
+                        self.emit('markerRun', marker);
                     }
-                    // Emit an event with the marker launch
-                    self.emit('markerLaunch', marker);
                 };
+                var stopMarker = function (marker) {
+                    marker.end();
+                    // Emit an event with the marker
+                    self.emit('markerStop', marker);
+                };
+
+
 
                 var self = this;
                 var lastMarkerTime = 0;
                 this.onProgress(function() {
                     var currentTime = self.getCurrentTime();
-                    // If the video was seek to a previous time than the last marker,
-                    // activate it once again
-                    if (lastMarkerTime > currentTime) {
-                        lastMarkerTime = currentTime;
-                    }
 
                     var newLastTime = lastMarkerTime;
                     angular.forEach(self.markersByName, function(marker) {
                         // If the marker time has past and we haven't launched this marker yet
-                        if (marker.time < currentTime && marker.time > lastMarkerTime) {
-                            launchMarker(marker);
+                        if (marker.startedIn(lastMarkerTime, currentTime)) {
+                            runMarker(marker);
                             newLastTime = Math.max(newLastTime, marker.time);
+                        }
+                        // If the marker has ended
+                        if (marker.endedIn(lastMarkerTime, currentTime) && marker.isRunning()) {
+                            stopMarker(marker);
+                            newLastTime = Math.max(newLastTime, marker.endTime);
                         }
                     });
                     lastMarkerTime = newLastTime;
@@ -360,28 +343,28 @@
                 this.on('seekToCompleted', function(seekTime){
 
                     angular.forEach(self.markersByName, function(marker) {
-                        if (!marker.hasOwnProperty('launchOnSeek') || marker.launchOnSeek === false) {
-                            return;
+                        // If the marker was running and the seek throws it out of range, stop it
+                        if (marker.isRunning() && !marker.inRange(seekTime.newTime)) {
+                            stopMarker(marker);
                         }
-                        if (marker.time <= seekTime.newTime && marker.time > seekTime.oldTime) {
-                            launchMarker(marker);
+
+                        if (marker.launchOnSeek) {
+                            if (marker.hasEndTime() && marker.inRange(seekTime.newTime) ||
+                                !marker.hasEndTime() && marker.startedIn(seekTime.oldTime, seekTime.newTime)) {
+                                runMarker(marker);
+                            }
+
                         }
                     });
                     lastMarkerTime = seekTime.newTime;
-
                 });
-
-                this._markerListener = true;
             };
 
             YoutubePlayer.prototype.addMarker = function (marker) {
                 this._initializeMarkerListener();
 
-                if (!marker.hasOwnProperty('name')) {
+                if (!marker.hasOwnProperty('name') || marker.name === null) {
                     marker.name = generateHash();
-                }
-                if (marker.hasOwnProperty('blockFF') && marker.blockFF === true) {
-                    marker.launchOnSeek = true;
                 }
 
                 this.markersByName[marker.name] = marker;
@@ -425,169 +408,7 @@
             };
         }];
 
-    })
-    .directive('youtubePlayer', ['youtube', function (youtube) {
-        var playerAttrs = ['id', 'height', 'width'],
-            playerVarAttrs = ['autohide', 'autoplay', 'cc_load_policy', 'color', 'controls',
-                              'disablekb', 'enablejsapi', 'end', 'fs', 'iv_load_policy',
-                              'list', 'listType', 'loop', 'modestbranding', 'origin', 'playerapiid',
-                              'playlist', 'playsinline', 'rel', 'showinfo', 'start', 'theme'];
-        return {
-            restrict: 'EA',
-            require: ['youtubePlayer', '?ngModel'],
-            template: '<div class="youtubeOuterDiv">' +
-                      '  <div class="youtubeInnerDiv"></div>' +
-                      '  <div class="youtubeOverlay" ng-transclude=""></div>' +
-                      '</div>',
-            scope: {
-                videoId: '='
-            },
-            transclude: true,
-            controller: ['$scope','$q', function($scope, $q) {
-                var player = $q.defer();
-
-                this.setPlayer = function (p) {
-                    player.resolve(p);
-                };
-                this.getPlayer = function () {
-                    return player.promise;
-                };
-
-                var $overlayElm;
-                this.setOverlayElement = function (elm) {
-                    $overlayElm = elm;
-                };
-
-                this.getOverlayElement = function () {
-                    return $overlayElm;
-                };
-
-                var $videoElm = null;
-
-
-                this.getVideoElement = function () {
-                    if ($videoElm === null) {
-                        $videoElm = angular.element(this.getOverlayElement()[0].querySelector('.youtubeInnerDiv'));
-                    }
-                    return $videoElm;
-                };
-            }],
-            link: function (scope, elm, attrs, controllers) {
-                var youtubePlayerCtrl = controllers[0],
-                    ngModelCtrl = controllers[1];
-
-                var player = null;
-                var playerPromise = null;
-
-                elm.css('position','relative');
-                elm.css('display','block');
-
-                // Save the overlay element in the controller so child directives can use it
-                // TODO: check this out again
-                youtubePlayerCtrl.setOverlayElement(elm);
-
-                var $videoDiv = elm[0].querySelector('.youtubeInnerDiv');
-                var $outerDiv = angular.element(elm[0].querySelector('.youtubeOuterDiv'));
-                var $overlayElm = angular.element(elm[0].querySelector('.youtubeOverlay'));
-
-                $outerDiv.css('width', '100%');
-                $outerDiv.css('height', '100%');
-
-                var options = {
-                    playerVars: {}
-                };
-
-                playerAttrs.forEach(function(a) {
-                    if (typeof attrs[a] !== 'undefined') {
-                        options[a] = attrs[a];
-                    }
-                });
-                playerVarAttrs.forEach(function(a) {
-                    if (typeof attrs[a] !== 'undefined') {
-                        options.playerVars[a] = attrs[a];
-                    }
-
-                });
-                var createVideo = function() {
-                    options.videoId = scope.videoId;
-                    if (!options.hasOwnProperty('width') && !options.hasOwnProperty('height') ) {
-                        options.height = '390';
-                        options.width = '640';
-                    }
-                    elm.css('height',convertToUnits(options.height));
-                    elm.css('width',convertToUnits(options.width));
-
-                    playerPromise = youtube.loadPlayer($videoDiv, options).then(function(p) {
-                        player = p;
-                        youtubePlayerCtrl.setPlayer(player);
-
-                        player.setFullScreenElement($outerDiv[0]);
-                        player.setOverlayElement($overlayElm);
-
-                        if (typeof ngModelCtrl !== 'undefined') {
-                            ngModelCtrl.$setViewValue(player);
-                        }
-                        return p;
-                    });
-
-                };
-
-                scope.$watch('videoId',function sourceChangeEvent(id) {
-                    if (typeof id === 'undefined') {
-                        return;
-                    }
-                    if (playerPromise === null) {
-                        createVideo();
-                    } else {
-                        playerPromise.then(function(p){
-                            p.loadVideoById(id);
-                        });
-                    }
-
-                });
-
-
-                var aspectRatio = 16 / 9;
-
-                // Maybe add some sort of debounce, but without adding a dependency
-                var resizeWithAspectRatio = function () {
-                    if (options.height) {
-                        var w = Math.round(elm[0].clientHeight * aspectRatio);
-                        elm.css('width',convertToUnits(w));
-
-                    } else if (options.width) {
-                        var h = Math.round(elm[0].clientWidth / aspectRatio);
-                        elm.css('height',convertToUnits(h));
-                    }
-                };
-
-                if (attrs.hasOwnProperty('keepAspectRatio')) {
-
-                    // If aspect ratio is a string like '16:9', set the proper variable.
-                    var aspectMatch = attrs.keepAspectRatio.match(/^(\d+):(\d+)$/);
-                    if (aspectMatch) {
-                        aspectRatio = aspectMatch[1] / aspectMatch[2];
-                    }
-
-                    angular.element(window).bind('resize', resizeWithAspectRatio);
-                    // If the window or the element size changes, resize the element
-                    scope.$watch(function(){
-                        return [elm[0].clientWidth, elm[0].clientHeight].join('x');
-                    }, resizeWithAspectRatio);
-
-                }
-
-                scope.$on('$destroy', function() {
-                    youtubePlayerCtrl.setPlayer(null);
-                    player.destroy();
-                    player = null;
-
-                    angular.element(window).unbind('resize', resizeWithAspectRatio);
-                });
-
-            }
-        };
-    }]);
+    });
 
 
 })(angular);

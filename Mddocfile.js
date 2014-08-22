@@ -21,6 +21,7 @@ module.exports = function(mddoc) {
         'styles'  : [
             '/dist/hr-angular-youtube.css',
             '/demo/overlay/overlay.css',
+            '/demo/marker/marker.css',
             '/demo/assets/font-awesome/css/font-awesome.min.css'
         ],
         'menu' : [

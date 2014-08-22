@@ -6,6 +6,13 @@ youtube-player {
     user-select: none;
 }
 
+.hr-yt-marker {
+    position: absolute;
+    height: 100%;
+    width: 2px;
+    z-index: 14;
+}
+
 player-bar {
     width: 100%;
     position: relative;

@@ -63,10 +63,7 @@ player-bar .hr-yt-handle {
     padding: 10px;
     z-index: 20;
 }
+
 .hr-yt-marker {
-    position: absolute;
-    height: 100%;
-    width: 2px;
-    z-index: 14;
     background-color: white;
 }

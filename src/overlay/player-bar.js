@@ -122,7 +122,9 @@
                     });
                     // Add markers  to the bar
                     var addMarker = function(marker) {
-
+                        if (!marker.showMarker) {
+                            return;
+                        }
                         var $markerElm = angular.element('<span class="hr-yt-marker" '+
                                                          '      marker-name="'+marker.name+'">'+
                                                          '</span>');
