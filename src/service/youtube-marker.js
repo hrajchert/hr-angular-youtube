@@ -31,14 +31,19 @@
             // Override with user options
             angular.extend(this, options);
 
-            // Block when fast forward implies launch on seek
-            if (this.blockFF === true) {
-                this.launchOnSeek = true;
-            }
             // Duration implies end time
             if (this.duration !== null) {
                 this.endTime = this.time + this.duration;
             }
+        };
+
+        YoutubeMarker.prototype.shouldLaunchOnSeek = function () {
+            // Block when fast forward implies launch on seek
+            if (this.blockFF === true) {
+                return true;
+            }
+
+            return this.launchOnSeek;
         };
 
         YoutubeMarker.prototype.hasEndTime = function () {

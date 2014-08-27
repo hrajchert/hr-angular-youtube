@@ -347,7 +347,7 @@
                             stopMarker(marker);
                         }
 
-                        if (marker.launchOnSeek) {
+                        if (marker.shouldLaunchOnSeek()) {
                             if (marker.hasEndTime() && marker.inRange(seekTime.newTime) ||
                                 !marker.hasEndTime() && marker.startedIn(seekTime.oldTime, seekTime.newTime)) {
                                 runMarker(marker);
