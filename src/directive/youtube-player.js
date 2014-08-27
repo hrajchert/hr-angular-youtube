@@ -164,6 +164,9 @@
                     youtubePlayerCtrl.setPlayer(null);
                     player.destroy();
                     player = null;
+                    if (typeof ngModelCtrl !== 'undefined') {
+                        ngModelCtrl.$setViewValue(undefined);
+                    }
 
                     angular.element(window).unbind('resize', resizeWithAspectRatio);
                 });
