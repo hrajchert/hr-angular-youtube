@@ -82,7 +82,6 @@
                         self.emit('fullscreenchange');
                     });
                 }
-
                 this.player = new YT.Player(elmOrId, op);
 
                 this.markersByName = {};

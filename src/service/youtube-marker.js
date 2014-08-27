@@ -13,7 +13,6 @@
             this.endTime = null;
             this.duration = null;
             this.handler = this.handler || null;
-            this.template = null;
             // Whether this marker should be launched every time the marker pass or just the first time (assuming seeks)
             this.fireOnce = false;
             // Launch the marker when the user seeks past the marker time

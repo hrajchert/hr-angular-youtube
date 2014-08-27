@@ -50,13 +50,11 @@ angular.module('demoMarker', ['hrAngularYoutube'])
                 console.log('linkin!');
                 var self = this;
                 $scope.closeMarker = function() {
-                    console.log('close!');
                     self.destroy();
                     player.playVideo();
                 };
                 player.pauseVideo();
             }
-
         }));
 
     });
