@@ -113,7 +113,9 @@ gulp.task('docs-clean', function(cb) {
 
 gulp.task('build-docs', ['demo-cp', 'docs-dist-cp', 'docs-mddoc']);
 
-gulp.task('docs',['docs-clean'], function(){
+// docs-clean removes git
+//gulp.task('docs',['docs-clean'], function(){
+gulp.task('docs', function(){
     return gulp.start('build-docs');
 });
 

@@ -12,17 +12,17 @@ module.exports = function(mddoc) {
 //        'modules' : ['demo','demoOverlay', 'demoControls'],
 
         'scripts' : [
-            '/dist/hr-angular-youtube.js',
-            '/demo/controls/controls.js',
-            '/demo/overlay/overlay.js',
-            '/demo/marker/marker.js',
-            '/demo/assets/screenfull.min.js'
+            'dist/hr-angular-youtube.js',
+            'demo/controls/controls.js',
+            'demo/overlay/overlay.js',
+            'demo/marker/marker.js',
+            'demo/assets/screenfull.min.js'
         ],
         'styles'  : [
-            '/dist/hr-angular-youtube.css',
-            '/demo/overlay/overlay.css',
-            '/demo/marker/marker.css',
-            '/demo/assets/font-awesome/css/font-awesome.min.css'
+            'dist/hr-angular-youtube.css',
+            'demo/overlay/overlay.css',
+            'demo/marker/marker.css',
+            'demo/assets/font-awesome/css/font-awesome.min.css'
         ],
         'menu' : [
             {
