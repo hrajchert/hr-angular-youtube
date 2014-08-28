@@ -1,0 +1,26 @@
+<div ng-controller="MarkerDemoCtrl">
+        <youtube-player width="100%" keep-aspect-ratio video-id="id"  ng-model="player1">
+            <player-panel  class="bottom-panel ng-show">
+                <player-bar></player-bar>
+                <div class="controls">
+                    <span class="control-element">
+                        <player-play show-if-player-is="cued,unstarted,ended,paused">
+                            <i class="fa fa-play"></i>
+                        </player-play>
+                        <player-pause show-if-player-is="buffering,playing">
+                            <i class="fa fa-pause"></i>
+                        </player-pause>
+                    </span>
+                    <span class="control-element">
+                        <span player-current-time>0:00</span> / <span player-total-time>0:00</span>
+                    </span>
+                    <span show-if-fullscreen-enabled class="control-element" style="float:right">
+                        <player-fullscreen>
+                            <i show-if-fullscreen=true class="fa fa-expand"></i>
+                            <i show-if-fullscreen=false class="fa fa-compress"></i>
+                        </player-fullscreen>
+                    </span>
+                </div>
+            </player-panel>
+        </youtube-player>
+</div>
