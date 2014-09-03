@@ -716,7 +716,7 @@
             if (!this.hasEndTime()) {
                 return false;
             }
-            return t >= this.time && t <= this.endTime;
+            return t >= this.time && t < this.endTime;
         };
 
         YoutubeMarker.prototype.startedIn = function (begin, end) {
@@ -856,6 +856,11 @@
                 if (this.fullscreenEnabled()) {
                     var self = this;
                     document.addEventListener(screenfull.raw.fullscreenchange, function() {
+                        if (self.isFullscreen()) {
+                            angular.element(self._fullScreenElem).addClass('fullscreen');
+                        } else {
+                            angular.element(self._fullScreenElem).removeClass('fullscreen');
+                        }
                         self.emit('fullscreenchange');
                     });
                 }
