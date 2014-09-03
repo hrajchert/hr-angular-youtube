@@ -229,16 +229,19 @@
                     var currentTime = self.player.getCurrentTime();
                     var seekCompleted = false;
 
-                    // This can be made in fewer lines, but its easier to debug this way
-                    // if the current time is lower than the initial time, it means you
-                    // seek back, and its now complete
-                    if (currentTime < initialTime) {
-                        seekCompleted = true;
-                    }
-                    // if not, you pushed forward, and if you are bigger than the sec you tried
-                    // to push to, then you also have complete
-                    else if ( currentTime >= sec ) {
-                        seekCompleted = true;
+
+                    if (sec < initialTime ) {
+                        // If we intent to go backwards, we complete when current time is lower
+                        // than the initial one
+                        if (currentTime < initialTime) {
+                            seekCompleted = true;
+                        }
+
+                    } else {
+                        // If we intent to go forward, we complete once we pass the intended mark
+                        if ( currentTime >= sec ) {
+                            seekCompleted = true;
+                        }
                     }
                     // There may be a third scenario where the player is paused, you pushed
                     // forward and it complete but just next to sec.
@@ -322,7 +325,6 @@
                 var lastMarkerTime = 0;
                 this.onProgress(function() {
                     var currentTime = self.getCurrentTime();
-
                     var newLastTime = lastMarkerTime;
                     angular.forEach(self.markersByName, function(marker) {
                         // If the marker time has past and we haven't launched this marker yet
@@ -340,20 +342,22 @@
                 });
 
                 this.on('seekToCompleted', function(seekTime){
-
                     angular.forEach(self.markersByName, function(marker) {
-                        // If the marker was running and the seek throws it out of range, stop it
-                        if (marker.isRunning() && !marker.inRange(seekTime.newTime)) {
-                            stopMarker(marker);
-                        }
-
-                        if (marker.shouldLaunchOnSeek()) {
-                            if (marker.hasEndTime() && marker.inRange(seekTime.newTime) ||
-                                !marker.hasEndTime() && marker.startedIn(seekTime.oldTime, seekTime.newTime)) {
-                                runMarker(marker);
+                        if (marker.isRunning()) {
+                            // If the marker is running and the seek throws it out of range, stop it
+                            if (!marker.inRange(seekTime.newTime)) {
+                                stopMarker(marker);
                             }
-
+                        }else {
+                            // If the marker is not running, see if we need to start it
+                            if (marker.shouldLaunchOnSeek()) {
+                                if (marker.hasEndTime() && marker.inRange(seekTime.newTime) ||
+                                    !marker.hasEndTime() && marker.startedIn(seekTime.oldTime, seekTime.newTime)) {
+                                    runMarker(marker);
+                                }
+                            }
                         }
+
                     });
                     lastMarkerTime = seekTime.newTime;
                 });
