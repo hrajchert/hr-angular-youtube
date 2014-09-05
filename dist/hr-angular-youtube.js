@@ -225,27 +225,6 @@
 })(angular);
 
 
-/* global angular */
-(function(angular) {
-    angular.module('hrAngularYoutube')
-    .directive('playerFullscreen',  function() {
-        return {
-            restrict: 'E',
-            require: '^youtubePlayer',
-            template: '<div style="display: inherit" ng-transclude=""></div>',
-            transclude: true,
-            link: function(scope, elm, attrs,youtubePlayerCtrl) {
-                youtubePlayerCtrl.getPlayer().then(function(player){
-                    elm.on('click', function() {
-                        player.toggleFullscreen();
-                    });
-                });
-            }
-        };
-    });
-})(angular);
-
-
 /* global angular, YT */
 (function(angular) {
     angular.module('hrAngularYoutube')
@@ -360,49 +339,10 @@
 })(angular);
 
 
-/* global angular */
-(function(angular) {
-    angular.module('hrAngularYoutube')
-    .directive('playerTotalTime',  function() {
-        return {
-            restrict: 'EA',
-            require: '^youtubePlayer',
-            link: function(scope, elm, attrs,youtubePlayerCtrl) {
-                youtubePlayerCtrl.getPlayer().then(function(player){
-                    elm.html(player.getHumanReadableDuration());
-                });
-            }
-        };
-    });
-})(angular);
-
-
-/* global angular */
-(function(angular) {
-    angular.module('hrAngularYoutube')
-    .directive('playerVolumeHorizontal',  function() {
-        return {
-            restrict: 'E',
-            require: '^youtubePlayer',
-            template: '<div class="ng-transclude"></div><div class="hr-yt-volume-hr-bar"></div>',
-            transclude: true,
-            link: function(scope, elm, attrs,youtubePlayerCtrl) {
-
-                youtubePlayerCtrl.getPlayer().then(function(player){
-                    elm.on('click', function() {
-                        player.playVideo();
-                    });
-                });
-            }
-        };
-    });
-})(angular);
-
-
 /* global angular, YT */
 (function(angular) {
     angular.module('hrAngularYoutube')
-    .directive('progressBar', ['$compile', function($compile) {
+    .directive('playerProgressBar', ['$compile', function($compile) {
         return {
             restrict: 'E',
             require: '^youtubePlayer',
@@ -559,6 +499,66 @@
                     player.on('fullscreenEnabled', adjustLeftPosition);
                     angular.element(window).bind('resize', adjustLeftPosition);
 
+                });
+            }
+        };
+    });
+})(angular);
+
+
+/* global angular */
+(function(angular) {
+    angular.module('hrAngularYoutube')
+    .directive('playerToggleFullscreen',  function() {
+        return {
+            restrict: 'E',
+            require: '^youtubePlayer',
+            template: '<div style="display: inherit" ng-transclude=""></div>',
+            transclude: true,
+            link: function(scope, elm, attrs,youtubePlayerCtrl) {
+                youtubePlayerCtrl.getPlayer().then(function(player){
+                    elm.on('click', function() {
+                        player.toggleFullscreen();
+                    });
+                });
+            }
+        };
+    });
+})(angular);
+
+
+/* global angular */
+(function(angular) {
+    angular.module('hrAngularYoutube')
+    .directive('playerTotalTime',  function() {
+        return {
+            restrict: 'EA',
+            require: '^youtubePlayer',
+            link: function(scope, elm, attrs,youtubePlayerCtrl) {
+                youtubePlayerCtrl.getPlayer().then(function(player){
+                    elm.html(player.getHumanReadableDuration());
+                });
+            }
+        };
+    });
+})(angular);
+
+
+/* global angular */
+(function(angular) {
+    angular.module('hrAngularYoutube')
+    .directive('playerVolumeHorizontal',  function() {
+        return {
+            restrict: 'E',
+            require: '^youtubePlayer',
+            template: '<div class="ng-transclude"></div><div class="hr-yt-volume-hr-bar"></div>',
+            transclude: true,
+            link: function(scope, elm, attrs,youtubePlayerCtrl) {
+
+                youtubePlayerCtrl.getPlayer().then(function(player){
+                    elm.on('click', function() {
+                        player.playVideo();
+                    });
                 });
             }
         };

@@ -1,7 +1,7 @@
 /* global angular */
 (function(angular) {
     angular.module('hrAngularYoutube')
-    .directive('playerFullscreen',  function() {
+    .directive('playerToggleFullscreen',  function() {
         return {
             restrict: 'E',
             require: '^youtubePlayer',

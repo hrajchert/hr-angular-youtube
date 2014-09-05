@@ -30,14 +30,14 @@ player-volume-horizontal .ng-transclude {
     margin-left: 5px;
     margin-bottom: 2px;
 }
-progress-bar {
+player-progress-bar {
     width: 100%;
     position: relative;
     height: 10px;
     display: block;
 }
 
-progress-bar .hr-yt-loaded {
+player-progress-bar .hr-yt-loaded {
     position: absolute;
     top:0;
     z-index: 9;
@@ -46,7 +46,7 @@ progress-bar .hr-yt-loaded {
 }
 
 
-progress-bar .hr-yt-played {
+player-progress-bar .hr-yt-played {
     position: absolute;
     top:0;
     z-index: 10;
@@ -54,7 +54,7 @@ progress-bar .hr-yt-played {
     height: 100%;
 }
 
-progress-bar .hr-yt-handle {
+player-progress-bar .hr-yt-handle {
     position: absolute;
     top: -2px;
     left: 0;
