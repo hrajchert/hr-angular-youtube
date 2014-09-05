@@ -1,14 +1,14 @@
-player-bar {
+progress-bar {
     background-color: rgb(70,70,70);
 }
 
-player-bar .hr-yt-loaded {
+.hr-yt-loaded {
     background-color: rgb(143,143,143);
 }
-player-bar .hr-yt-played {
+.hr-yt-played {
     background-color: red;
 }
-player-bar .hr-yt-handle {
+.hr-yt-handle {
     background-color: white;
 }
 

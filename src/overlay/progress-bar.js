@@ -1,7 +1,7 @@
 /* global angular, YT */
 (function(angular) {
     angular.module('hrAngularYoutube')
-    .directive('playerBar', ['$compile', function($compile) {
+    .directive('progressBar', ['$compile', function($compile) {
         return {
             restrict: 'E',
             require: '^youtubePlayer',

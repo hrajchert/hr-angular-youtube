@@ -10,7 +10,8 @@
             this._player = player;
             this._elm = null;
             this._scope = null;
-
+            this._parentElm = options.parent || player.getOverlayElement();
+            this._addMethod = options.addMethod || 'append';
             this.template = null;
             this.link = this.link || null;
 
@@ -29,7 +30,11 @@
             this.template.then(function(template) {
                 self._elm = $compile(template)(self._scope);
                 // Add it as an overlay
-                self._player.getOverlayElement().append(self._elm);
+                if (self._addMethod === 'append') {
+                    self._parentElm.append(self._elm);
+                } else if (self._addMethod === 'prepend') {
+                    self._parentElm.prepend(self._elm);
+                }
 
                 // Call the link function to allow logic in the scope
                 if (typeof self.link === 'function') {

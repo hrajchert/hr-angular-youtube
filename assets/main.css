@@ -1,4 +1,8 @@
 youtube-player {
-    overflow: hidden;
     user-select: none;
+}
+
+.hr-yt-wrapper {
+    width: 100%;
+    height: 100%;
 }

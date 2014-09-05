@@ -18,9 +18,9 @@
         return {
             restrict: 'EA',
             require: ['youtubePlayer', '?ngModel'],
-            template: '<div class="youtubeOuterDiv">' +
-                      '  <div class="youtubeInnerDiv"></div>' +
-                      '  <div class="youtubeOverlay" ng-transclude=""></div>' +
+            template: '<div class="hr-yt-wrapper">' +
+                      '  <div class="hr-yt-video-place-holder"></div>' +
+                      '  <div class="hr-yt-overlay" ng-transclude=""></div>' +
                       '</div>',
             scope: {
                 videoId: '='
@@ -50,7 +50,7 @@
 
                 this.getVideoElement = function () {
                     if ($videoElm === null) {
-                        $videoElm = angular.element(this.getOverlayElement()[0].querySelector('.youtubeInnerDiv'));
+                        $videoElm = angular.element(this.getOverlayElement()[0].querySelector('.hr-yt-video-place-holder'));
                     }
                     return $videoElm;
                 };
@@ -69,12 +69,9 @@
                 // TODO: check this out again
                 youtubePlayerCtrl.setOverlayElement(elm);
 
-                var $videoDiv = elm[0].querySelector('.youtubeInnerDiv');
-                var $outerDiv = angular.element(elm[0].querySelector('.youtubeOuterDiv'));
-                var $overlayElm = angular.element(elm[0].querySelector('.youtubeOverlay'));
-
-                $outerDiv.css('width', '100%');
-                $outerDiv.css('height', '100%');
+                var $videoDiv = elm[0].querySelector('.hr-yt-video-place-holder');
+                var $outerDiv = angular.element(elm[0].querySelector('.hr-yt-wrapper'));
+                var $overlayElm = angular.element(elm[0].querySelector('.hr-yt-overlay'));
 
                 var options = {
                     playerVars: {}

@@ -72,7 +72,7 @@
                 this.options = options;
 
                 var op = angular.copy(options);
-                // Poner un if fit to parent, o algo asi
+                // TODO: Add a fit to parent or something like that
                 op.width = '100%';
                 op.height = '100%';
 
