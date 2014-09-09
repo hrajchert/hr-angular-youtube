@@ -76,8 +76,8 @@
                 op.width = '100%';
                 op.height = '100%';
 
+                var self = this;
                 if (this.fullscreenEnabled()) {
-                    var self = this;
                     document.addEventListener(screenfull.raw.fullscreenchange, function() {
                         if (self.isFullscreen()) {
                             angular.element(self._fullScreenElem).addClass('fullscreen');
@@ -90,6 +90,15 @@
                 this.player = new YT.Player(elmOrId, op);
 
                 this.markersByName = {};
+                this._muted = false;
+                this._volume = 100;
+
+                this.on('onStateChange', function(event) {
+                    if (event.data === YT.PlayerState.PLAYING) {
+                        self._muted = self.player.isMuted();
+                        self.setVolume(self.player.getVolume());
+                    }
+                });
                 // TODO: Maybe add a markersByTime for performance
             };
 
@@ -97,12 +106,12 @@
             angular.forEach([
                 'loadVideoById', 'loadVideoByUrl', 'cueVideoById', 'cueVideoByUrl', 'cuePlaylist',
                 'loadPlaylist', 'playVideo', 'pauseVideo', 'stopVideo', 'seekTo', 'clearVideo',
-                'nextVideo', 'previousVideo', 'playVideoAt', 'mute', 'unMute', 'isMuted', 'setVolume',
-                'getVolume', 'setSize', 'getPlaybackRate', 'setPlaybackRate', 'getAvailablePlaybackRates',
+                'nextVideo', 'previousVideo', 'playVideoAt',
+                'setSize', 'getPlaybackRate', 'setPlaybackRate', 'getAvailablePlaybackRates',
                 'setLoop', 'setShuffle', 'getVideoLoadedFraction', 'getPlayerState', 'getCurrentTime',
                 'getPlaybackQuality', 'setPlaybackQuality', 'getAvailableQualityLevels', 'getDuration',
                 'getVideoUrl', 'getVideoEmbedCode', 'getPlaylist', 'getPlaylistIndex', 'getIframe', 'destroy'
-                // 'addEventListener', 'removeEventListener'
+                // 'addEventListener', 'removeEventListener','mute',unMute,isMuted,getVolume,setVolume
             ], function(name) {
                 YoutubePlayer.prototype[name] = function() {
                     return this.player[name].apply(this.player, arguments);
@@ -390,6 +399,43 @@
             };
 
 
+            YoutubePlayer.prototype.setVolume = function (volume) {
+                // If volume is 0, then set as muted, if not is unmuted
+                this._muted = volume === 0;
+                this._volume = volume;
+                this.player.setVolume(volume);
+            };
+
+            YoutubePlayer.prototype.getVolume = function () {
+                if (this._muted) {
+                    return 0;
+                }
+                return this._volume;
+            };
+
+            YoutubePlayer.prototype.mute = function () {
+                this._muted = true;
+                this.player.mute();
+            };
+
+            YoutubePlayer.prototype.unMute = function () {
+                this._muted = false;
+                this.player.unMute();
+            };
+
+
+
+            YoutubePlayer.prototype.isMuted = function () {
+                return this._muted;
+            };
+
+            YoutubePlayer.prototype.toggleMute = function () {
+                if (this.isMuted()) {
+                    this.unMute();
+                } else {
+                    this.mute();
+                }
+            };
 
             // Youtube callback when API is ready
             $window.onYouTubeIframeAPIReady = function () {

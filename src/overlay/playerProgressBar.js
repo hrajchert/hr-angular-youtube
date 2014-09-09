@@ -5,16 +5,21 @@
         return {
             restrict: 'E',
             require: '^youtubePlayer',
-            template: '<div class="hr-yt-played"></div>' +
-                      '<div class="hr-yt-loaded"></div>' +
-                      '<div class="hr-yt-handle"></div>',
+            template: '<div yt-slider="onSliderUp($percentage)"' +
+                      '     yt-slider-down="onSliderDown()"' +
+                      '     yt-slider-move="onSliderMove($percentage)" style="width:100%">' +
+                      '  <div class="hr-yt-played"></div>' +
+                      '  <div class="hr-yt-loaded"></div>' +
+                      '  <div class="hr-yt-handle"></div>' +
+                      '</div>',
+            scope: {},
             link: function(scope, elm, attrs, youtubePlayerCtrl) {
                 youtubePlayerCtrl.getPlayer().then(function(player){
 
                     var duration = player.getDuration();
-                    var $played = angular.element(elm.children()[0]);
-                    var $loaded = angular.element(elm.children()[1]);
-                    var $handle = angular.element(elm.children()[2]);
+                    var $played = angular.element(elm[0].querySelector('.hr-yt-played')),
+                        $loaded = angular.element(elm[0].querySelector('.hr-yt-loaded')),
+                        $handle = angular.element(elm[0].querySelector('.hr-yt-handle'));
 
                     var updateProgress = function(sec) {
                         var played, loaded;
@@ -47,79 +52,39 @@
                     player.on('onStateChange', updateProgress);
 
 
-                    var $videoElm = youtubePlayerCtrl.getVideoElement();
-                    var $document = angular.element(document);
-
-
-                    elm.on('mousedown', function(e) {
-                        // If it wasn't a left click, end
-                        if (e.button !== 0) {
-                            return;
-                        }
+                    var playStatus = null;
+                    scope.onSliderDown = function () {
                         // Save the status of the player at the begining of the dragndrop
-                        var playStatus = player.getPlayerState();
+                        playStatus = player.getPlayerState();
                         player.pauseVideo();
+                    };
 
-                        // Create a blocker div, so that the iframe doesn't eat the mouse up events
-                        var $blocker = angular.element('<div></div>');
-                        $blocker.css('position', 'absolute');
-                        $blocker.css('width', $videoElm[0].clientWidth + 'px');
-                        $blocker.css('height', $videoElm[0].clientHeight + 'px');
-                        $blocker.css('pointer-events', 'false');
-                        $blocker.css('top', '0');
-                        $videoElm.parent().append($blocker);
+                    scope.onSliderMove = function(percentage) {
+                        // See what second it corresponds to
+                        var sec = Math.round(duration * percentage);
+                        // player.eventSeekTo(sec, false);
+                        updateProgress(sec);
+                    };
 
-                        var getSecondFromPageX = function (pagex) {
-                            // Get the player bar x from the page x
-                            var left =  elm[0].getBoundingClientRect().left;
-                            var x = Math.min(Math.max(0,pagex - left),elm[0].clientWidth);
+                    scope.onSliderUp = function(percentage) {
+                        // See what second it corresponds to
+                        var sec = Math.round(duration * percentage);
+                        if (playStatus === YT.PlayerState.PLAYING || playStatus === YT.PlayerState.PAUSED) {
+                            // Load it in the player
+                            player.eventSeekTo(sec, true);
+                            // Force update progress because seekTo takes its time
+                            updateProgress(sec);
+                        } else {
+                            player.startLoading(sec);
+                        }
 
-                            // Get which percent of the video, the user clicked in
-                            var xpercent = x / elm[0].clientWidth;
-                            // See what second it corresponds to
-                            return Math.round(duration * xpercent);
+                        // If it was playin before, play now as well
+                        if (playStatus === YT.PlayerState.PLAYING) {
+                            player.playVideo();
+                        }
+                    };
 
-                        };
 
-                        var documentMouseMove = function(event) {
-                            scope.$apply(function(){
-                                var sec = getSecondFromPageX(event.pageX);
-                                // player.eventSeekTo(sec, false);
-                                updateProgress(sec);
-                            });
-
-                        };
-
-                        var documentMouseUp = function(event) {
-                            scope.$apply(function() {
-                                var sec = getSecondFromPageX(event.pageX);
-
-                                // Remove the event listeners for the drag and drop
-                                $document.off('mousemove', documentMouseMove );
-                                $document.off('mouseup', documentMouseUp);
-                                // remove the div that was blocking the events of the iframe
-                                $blocker.remove();
-
-                                if (playStatus === YT.PlayerState.PLAYING || playStatus === YT.PlayerState.PAUSED) {
-                                    // Load it in the player
-                                    player.eventSeekTo(sec, true);
-                                    // Force update progress because seekTo takes its time
-                                    updateProgress(sec);
-                                } else {
-                                    player.startLoading(sec);
-                                }
-
-                                // If it was playinf before, play now as well
-                                if (playStatus === YT.PlayerState.PLAYING) {
-                                    player.playVideo();
-                                }
-                            });
-
-                        };
-
-                        $document.on('mousemove', documentMouseMove );
-                        $document.on('mouseup', documentMouseUp);
-                    });
                     // Add markers  to the bar
                     var addMarker = function(marker) {
                         if (!marker.showMarker) {

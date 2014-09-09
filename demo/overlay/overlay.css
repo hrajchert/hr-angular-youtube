@@ -1,3 +1,4 @@
+/* Progress Bar */
 player-progress-bar {
     background-color: rgb(70,70,70);
 }
@@ -8,15 +9,22 @@ player-progress-bar {
 .hr-yt-played {
     background-color: red;
 }
+
 .hr-yt-handle {
     background-color: white;
 }
 
 
+/* Volume Bar */
 .hr-yt-volume-hr-bar {
-    background-color: rgb(70,70,70);;
-
+    background-color: rgb(143,143,143);
 }
+
+.hr-yt-setted {
+    background-color: red;
+}
+
+/* Control bar (lower panel) */
 .bottom-panel {
     position: absolute;
     bottom: 0;

@@ -206,6 +206,84 @@
 /* global angular */
 (function(angular) {
     angular.module('hrAngularYoutube')
+    .directive('ytSlider',['$parse','$document',  function($parse, $document) {
+        return {
+            restrict: 'A',
+            require: '^youtubePlayer',
+            link: function(scope, elm, attrs,youtubePlayerCtrl) {
+                var slideDown  = $parse(attrs.ytSliderDown),
+                    sliderMove = $parse(attrs.ytSliderMove),
+                    sliderUp   = $parse(attrs.ytSlider);
+
+                var getPercentageFromPageX = function (pagex) {
+                    // Get the player bar x from the page x
+                    var left =  elm[0].getBoundingClientRect().left;
+                    var x = Math.min(Math.max(0,pagex - left),elm[0].clientWidth);
+
+                    // Get the percentage of the bar
+                    var xpercent = x / elm[0].clientWidth;
+                    return xpercent;
+                };
+
+                youtubePlayerCtrl.getPlayer().then(function(){
+                    var $videoElm = youtubePlayerCtrl.getVideoElement();
+
+                    elm.on('mousedown', function(e) {
+                        // If it wasn't a left click, end
+                        if (e.button !== 0) {
+                            return;
+                        }
+
+                        var p = getPercentageFromPageX(e.pageX);
+                        slideDown(scope,{$percentage: p});
+
+                        // Create a blocker div, so that the iframe doesn't eat the mouse up events
+                        var $blocker = angular.element('<div></div>');
+                        $blocker.css('position', 'absolute');
+                        $blocker.css('width', $videoElm[0].clientWidth + 'px');
+                        $blocker.css('height', $videoElm[0].clientHeight + 'px');
+                        $blocker.css('pointer-events', 'false');
+                        $blocker.css('top', '0');
+                        $videoElm.parent().append($blocker);
+
+
+                        var documentMouseMove = function(event) {
+                            scope.$apply(function(){
+                                var p = getPercentageFromPageX(event.pageX);
+                                sliderMove(scope,{$percentage: p});
+                            });
+
+                        };
+
+                        var documentMouseUp = function(event) {
+                            scope.$apply(function() {
+                                var p = getPercentageFromPageX(event.pageX);
+
+                                // Remove the event listeners for the drag and drop
+                                $document.off('mousemove', documentMouseMove );
+                                $document.off('mouseup', documentMouseUp);
+                                // remove the div that was blocking the events of the iframe
+                                $blocker.remove();
+
+                                sliderUp(scope, {$percentage: p});
+                            });
+
+                        };
+
+                        $document.on('mousemove', documentMouseMove );
+                        $document.on('mouseup', documentMouseUp);
+                    });
+
+                });
+            }
+        };
+    }]);
+})(angular);
+
+
+/* global angular */
+(function(angular) {
+    angular.module('hrAngularYoutube')
     .directive('playerCurrentTime',  function() {
         return {
             restrict: 'EA',
@@ -346,16 +424,21 @@
         return {
             restrict: 'E',
             require: '^youtubePlayer',
-            template: '<div class="hr-yt-played"></div>' +
-                      '<div class="hr-yt-loaded"></div>' +
-                      '<div class="hr-yt-handle"></div>',
+            template: '<div yt-slider="onSliderUp($percentage)"' +
+                      '     yt-slider-down="onSliderDown()"' +
+                      '     yt-slider-move="onSliderMove($percentage)" style="width:100%">' +
+                      '  <div class="hr-yt-played"></div>' +
+                      '  <div class="hr-yt-loaded"></div>' +
+                      '  <div class="hr-yt-handle"></div>' +
+                      '</div>',
+            scope: {},
             link: function(scope, elm, attrs, youtubePlayerCtrl) {
                 youtubePlayerCtrl.getPlayer().then(function(player){
 
                     var duration = player.getDuration();
-                    var $played = angular.element(elm.children()[0]);
-                    var $loaded = angular.element(elm.children()[1]);
-                    var $handle = angular.element(elm.children()[2]);
+                    var $played = angular.element(elm[0].querySelector('.hr-yt-played')),
+                        $loaded = angular.element(elm[0].querySelector('.hr-yt-loaded')),
+                        $handle = angular.element(elm[0].querySelector('.hr-yt-handle'));
 
                     var updateProgress = function(sec) {
                         var played, loaded;
@@ -388,79 +471,39 @@
                     player.on('onStateChange', updateProgress);
 
 
-                    var $videoElm = youtubePlayerCtrl.getVideoElement();
-                    var $document = angular.element(document);
-
-
-                    elm.on('mousedown', function(e) {
-                        // If it wasn't a left click, end
-                        if (e.button !== 0) {
-                            return;
-                        }
+                    var playStatus = null;
+                    scope.onSliderDown = function () {
                         // Save the status of the player at the begining of the dragndrop
-                        var playStatus = player.getPlayerState();
+                        playStatus = player.getPlayerState();
                         player.pauseVideo();
+                    };
 
-                        // Create a blocker div, so that the iframe doesn't eat the mouse up events
-                        var $blocker = angular.element('<div></div>');
-                        $blocker.css('position', 'absolute');
-                        $blocker.css('width', $videoElm[0].clientWidth + 'px');
-                        $blocker.css('height', $videoElm[0].clientHeight + 'px');
-                        $blocker.css('pointer-events', 'false');
-                        $blocker.css('top', '0');
-                        $videoElm.parent().append($blocker);
+                    scope.onSliderMove = function(percentage) {
+                        // See what second it corresponds to
+                        var sec = Math.round(duration * percentage);
+                        // player.eventSeekTo(sec, false);
+                        updateProgress(sec);
+                    };
 
-                        var getSecondFromPageX = function (pagex) {
-                            // Get the player bar x from the page x
-                            var left =  elm[0].getBoundingClientRect().left;
-                            var x = Math.min(Math.max(0,pagex - left),elm[0].clientWidth);
+                    scope.onSliderUp = function(percentage) {
+                        // See what second it corresponds to
+                        var sec = Math.round(duration * percentage);
+                        if (playStatus === YT.PlayerState.PLAYING || playStatus === YT.PlayerState.PAUSED) {
+                            // Load it in the player
+                            player.eventSeekTo(sec, true);
+                            // Force update progress because seekTo takes its time
+                            updateProgress(sec);
+                        } else {
+                            player.startLoading(sec);
+                        }
 
-                            // Get which percent of the video, the user clicked in
-                            var xpercent = x / elm[0].clientWidth;
-                            // See what second it corresponds to
-                            return Math.round(duration * xpercent);
+                        // If it was playin before, play now as well
+                        if (playStatus === YT.PlayerState.PLAYING) {
+                            player.playVideo();
+                        }
+                    };
 
-                        };
 
-                        var documentMouseMove = function(event) {
-                            scope.$apply(function(){
-                                var sec = getSecondFromPageX(event.pageX);
-                                // player.eventSeekTo(sec, false);
-                                updateProgress(sec);
-                            });
-
-                        };
-
-                        var documentMouseUp = function(event) {
-                            scope.$apply(function() {
-                                var sec = getSecondFromPageX(event.pageX);
-
-                                // Remove the event listeners for the drag and drop
-                                $document.off('mousemove', documentMouseMove );
-                                $document.off('mouseup', documentMouseUp);
-                                // remove the div that was blocking the events of the iframe
-                                $blocker.remove();
-
-                                if (playStatus === YT.PlayerState.PLAYING || playStatus === YT.PlayerState.PAUSED) {
-                                    // Load it in the player
-                                    player.eventSeekTo(sec, true);
-                                    // Force update progress because seekTo takes its time
-                                    updateProgress(sec);
-                                } else {
-                                    player.startLoading(sec);
-                                }
-
-                                // If it was playinf before, play now as well
-                                if (playStatus === YT.PlayerState.PLAYING) {
-                                    player.playVideo();
-                                }
-                            });
-
-                        };
-
-                        $document.on('mousemove', documentMouseMove );
-                        $document.on('mouseup', documentMouseUp);
-                    });
                     // Add markers  to the bar
                     var addMarker = function(marker) {
                         if (!marker.showMarker) {
@@ -551,13 +594,45 @@
         return {
             restrict: 'E',
             require: '^youtubePlayer',
-            template: '<div class="ng-transclude"></div><div class="hr-yt-volume-hr-bar"></div>',
+            template: '<div ng-click="toggleMute()" class="ng-transclude"></div>'+
+                      '<div class="hr-yt-volume-hr-bar"' +
+                      '     yt-slider-move="onSliderMove($percentage)"' +
+                      '     yt-slider="onSliderUp($percentage)">'+
+                      '  <div class="hr-yt-setted"></div>'+
+                      '  <div class="hr-yt-handle"></div>'+
+                      '</div>',
             transclude: true,
+            scope: {},
             link: function(scope, elm, attrs,youtubePlayerCtrl) {
+                var $volumeBar = angular.element(elm[0].querySelector('.hr-yt-volume-hr-bar')),
+                    $settedBar = angular.element(elm[0].querySelector('.hr-yt-setted')),
+                    $handle    = angular.element(elm[0].querySelector('.hr-yt-handle'));
 
                 youtubePlayerCtrl.getPlayer().then(function(player){
-                    elm.on('click', function() {
-                        player.playVideo();
+                    console.log('Volume player', player.getVolume());
+
+                    var updateVolumeBar = function(volume) {
+                        var handleX = volume * $volumeBar[0].clientWidth - $handle[0].clientWidth / 2  ;
+                        handleX = Math.min(Math.max(0, handleX),$volumeBar[0].clientWidth - $handle[0].clientWidth / 2);
+                        $settedBar.css('width', volume * 100 + '%');
+                        $handle.css('left', handleX + 'px');
+                    };
+                    scope.toggleMute = function() {
+                        player.toggleMute();
+                    };
+                    scope.onSliderMove = function (volume) {
+                        player.setVolume(volume * 100);
+                        updateVolumeBar(volume);
+                    };
+
+                    scope.onSliderUp = function (volume) {
+                        player.setVolume(volume * 100);
+                        updateVolumeBar(volume);
+                    };
+                    scope.$watch(function(){
+                        return player.getVolume();
+                    }, function(volumeFromModel) {
+                        updateVolumeBar(volumeFromModel / 100);
                     });
                 });
             }
@@ -646,6 +721,35 @@
                     };
                     hideOrShow();
                     player.on('fullscreenchange', hideOrShow);
+                });
+            }
+        };
+    }])
+
+    .directive('showIfMuted', ['$animate', function($animate) {
+        return {
+            restrict: 'A',
+            require: '^youtubePlayer',
+            link: function(scope, elm, attrs,youtubePlayerCtrl) {
+                // By default hide
+                $animate.addClass(elm, 'ng-hide');
+                youtubePlayerCtrl.getPlayer().then(function(player){
+                    var hideOrShow = function () {
+                        var show = !player.isMuted();
+                        if (attrs.showIfMuted === 'true') {
+                            show = !show;
+                        }
+
+                        if ( show ) {
+                            $animate.removeClass(elm, 'ng-hide');
+                        } else {
+                            $animate.addClass(elm, 'ng-hide');
+                        }
+                    };
+                    hideOrShow();
+                    scope.$watch(function(){
+                        return player.isMuted();
+                    }, hideOrShow);
                 });
             }
         };
@@ -850,8 +954,8 @@
                 op.width = '100%';
                 op.height = '100%';
 
+                var self = this;
                 if (this.fullscreenEnabled()) {
-                    var self = this;
                     document.addEventListener(screenfull.raw.fullscreenchange, function() {
                         if (self.isFullscreen()) {
                             angular.element(self._fullScreenElem).addClass('fullscreen');
@@ -864,6 +968,15 @@
                 this.player = new YT.Player(elmOrId, op);
 
                 this.markersByName = {};
+                this._muted = false;
+                this._volume = 100;
+
+                this.on('onStateChange', function(event) {
+                    if (event.data === YT.PlayerState.PLAYING) {
+                        self._muted = self.player.isMuted();
+                        self.setVolume(self.player.getVolume());
+                    }
+                });
                 // TODO: Maybe add a markersByTime for performance
             };
 
@@ -871,12 +984,12 @@
             angular.forEach([
                 'loadVideoById', 'loadVideoByUrl', 'cueVideoById', 'cueVideoByUrl', 'cuePlaylist',
                 'loadPlaylist', 'playVideo', 'pauseVideo', 'stopVideo', 'seekTo', 'clearVideo',
-                'nextVideo', 'previousVideo', 'playVideoAt', 'mute', 'unMute', 'isMuted', 'setVolume',
-                'getVolume', 'setSize', 'getPlaybackRate', 'setPlaybackRate', 'getAvailablePlaybackRates',
+                'nextVideo', 'previousVideo', 'playVideoAt',
+                'setSize', 'getPlaybackRate', 'setPlaybackRate', 'getAvailablePlaybackRates',
                 'setLoop', 'setShuffle', 'getVideoLoadedFraction', 'getPlayerState', 'getCurrentTime',
                 'getPlaybackQuality', 'setPlaybackQuality', 'getAvailableQualityLevels', 'getDuration',
                 'getVideoUrl', 'getVideoEmbedCode', 'getPlaylist', 'getPlaylistIndex', 'getIframe', 'destroy'
-                // 'addEventListener', 'removeEventListener'
+                // 'addEventListener', 'removeEventListener','mute',unMute,isMuted,getVolume,setVolume
             ], function(name) {
                 YoutubePlayer.prototype[name] = function() {
                     return this.player[name].apply(this.player, arguments);
@@ -1164,6 +1277,43 @@
             };
 
 
+            YoutubePlayer.prototype.setVolume = function (volume) {
+                // If volume is 0, then set as muted, if not is unmuted
+                this._muted = volume === 0;
+                this._volume = volume;
+                this.player.setVolume(volume);
+            };
+
+            YoutubePlayer.prototype.getVolume = function () {
+                if (this._muted) {
+                    return 0;
+                }
+                return this._volume;
+            };
+
+            YoutubePlayer.prototype.mute = function () {
+                this._muted = true;
+                this.player.mute();
+            };
+
+            YoutubePlayer.prototype.unMute = function () {
+                this._muted = false;
+                this.player.unMute();
+            };
+
+
+
+            YoutubePlayer.prototype.isMuted = function () {
+                return this._muted;
+            };
+
+            YoutubePlayer.prototype.toggleMute = function () {
+                if (this.isMuted()) {
+                    this.unMute();
+                } else {
+                    this.mute();
+                }
+            };
 
             // Youtube callback when API is ready
             $window.onYouTubeIframeAPIReady = function () {

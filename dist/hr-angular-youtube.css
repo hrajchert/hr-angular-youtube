@@ -23,13 +23,33 @@ player-volume-horizontal {
 player-volume-horizontal .ng-transclude {
     display: inline-block;
 }
+
 .hr-yt-volume-hr-bar {
     width: 40px;
     height: 5px;
     display: inline-block;
     margin-left: 5px;
     margin-bottom: 2px;
+    position: relative;
 }
+
+.hr-yt-volume-hr-bar .hr-yt-setted {
+    position: absolute;
+    top:0;
+    z-index: 9;
+    width: 0px;
+    height: 100%;
+}
+
+.hr-yt-volume-hr-bar .hr-yt-handle {
+    position: absolute;
+    top: -3px;
+    left: 0px;
+    z-index: 11;
+    width: 3px;
+    height: 11px;
+}
+
 player-progress-bar {
     width: 100%;
     position: relative;
