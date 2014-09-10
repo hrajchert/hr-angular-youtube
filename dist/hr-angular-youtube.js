@@ -426,7 +426,7 @@
             require: '^youtubePlayer',
             template: '<div yt-slider="onSliderUp($percentage)"' +
                       '     yt-slider-down="onSliderDown()"' +
-                      '     yt-slider-move="onSliderMove($percentage)" style="width:100%">' +
+                      '     yt-slider-move="onSliderMove($percentage)" style="width:100%;height:100%;">' +
                       '  <div class="hr-yt-played"></div>' +
                       '  <div class="hr-yt-loaded"></div>' +
                       '  <div class="hr-yt-handle"></div>' +
