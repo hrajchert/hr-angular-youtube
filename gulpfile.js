@@ -71,7 +71,7 @@ gulp.task('docs-dist-cp',['process-scripts', 'process-styles'], function(cb) {
 });
 
 
-gulp.task('docs-mddoc',['demo-cp', 'docs-dist-cp'], function(cb) {
+gulp.task('docs-mddoc', function(cb) {
     loadOptions().then(function(options) {
         var mddoc  = require('mddoc'),
             config = mddoc.config;
@@ -115,7 +115,7 @@ gulp.task('docs-clean', function(cb) {
     });
 });
 
-gulp.task('build-docs', ['docs-mddoc']);
+gulp.task('build-docs', ['demo-cp', 'docs-dist-cp', 'docs-mddoc']);
 
 // docs-clean removes git
 //gu-lp.task('docs',['docs-clean'], function(){

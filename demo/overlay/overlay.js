@@ -8,5 +8,5 @@ angular.module('demoOverlay', ['hrAngularYoutube'])
     youtubeProvider.setPlayerVarOption('modestbranding',1);
 }])
 .controller('OverlayDemoCtrl', ['$scope', function($scope){
-     $scope.id = 'QjX9Wu-MJ-s';
+    $scope.id = 'QjX9Wu-MJ-s';
 }]);

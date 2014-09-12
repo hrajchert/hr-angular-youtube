@@ -281,6 +281,28 @@
 })(angular);
 
 
+
+/* global angular */
+(function(angular) {
+    angular.module('hrAngularYoutube')
+    .directive('playerCurrentSpeed',  function() {
+        return {
+            restrict: 'EA',
+            require: '^youtubePlayer',
+            link: function(scope, elm, attrs,youtubePlayerCtrl) {
+                youtubePlayerCtrl.getPlayer().then(function(player){
+                    var setPlaybackRate = function () {
+                        elm.html(player.getPlaybackRate ());
+                    };
+                    player.on('onPlaybackRateChange',setPlaybackRate);
+                    setPlaybackRate();
+                });
+            }
+        };
+    });
+})(angular);
+
+
 /* global angular */
 (function(angular) {
     angular.module('hrAngularYoutube')
@@ -478,6 +500,7 @@
                         player.pauseVideo();
                     };
 
+
                     scope.onSliderMove = function(percentage) {
                         // See what second it corresponds to
                         var sec = Math.round(duration * percentage);
@@ -546,6 +569,64 @@
             }
         };
     });
+})(angular);
+
+
+
+/* global angular */
+(function(angular) {
+    angular.module('hrAngularYoutube')
+    .directive('playerRepeatAvailableSpeed',  function() {
+        return {
+            restrict: 'A',
+            template: function (tElm) {
+                tElm.removeAttr('player-repeat-available-speed');
+                tElm.attr('ng-repeat','$speed in availableSpeeds');
+                return tElm[0].outerHTML;
+            },
+            replace: true,
+            priority: 1000,
+            scope: {
+
+            },
+            require: '^youtubePlayer',
+            link: function(scope, elm, attrs, youtubePlayerCtrl) {
+                youtubePlayerCtrl.getPlayer().then(function(player){
+                    scope.availableSpeeds = player.getAvailablePlaybackRates();
+                    if (attrs.hasOwnProperty('reverse')) {
+                        scope.availableSpeeds.reverse();
+
+                    }
+
+                });
+            }
+
+        };
+    });
+})(angular);
+
+
+/* global angular */
+(function(angular) {
+    angular.module('hrAngularYoutube')
+    .directive('playerSetSpeed',  ['$parse', function($parse) {
+        return {
+            restrict: 'A',
+            require: '^youtubePlayer',
+            link: function(scope, elm, attrs,youtubePlayerCtrl) {
+                var speedFn = $parse(attrs.playerSetSpeed);
+
+                youtubePlayerCtrl.getPlayer().then(function(player){
+                    elm.on('click', function() {
+                        scope.$apply(function() {
+                            var speed = speedFn(scope);
+                            player.setPlaybackRate(speed);
+                        });
+                    });
+                });
+            }
+        };
+    }]);
 })(angular);
 
 

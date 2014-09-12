@@ -1,5 +1,5 @@
 <div ng-controller="OverlayDemoCtrl">
-    <youtube-player width="100%" keep-aspect-ratio video-id="id">
+    <youtube-player width="100%" keep-aspect-ratio video-id="id" ng-model="video">
         <player-panel  class="bottom-panel ng-show">
             <player-progress-bar></player-progress-bar>
             <div class="controls">
@@ -25,6 +25,14 @@
                         <i show-if-fullscreen=true class="fa fa-expand"></i>
                         <i show-if-fullscreen=false class="fa fa-compress"></i>
                     </player-toggle-fullscreen>
+                </span>
+                <span class="control-element speed-control" dropdown style="float:right">
+                    <div class="dropdown-toggle"><span player-current-speed >1</span>x</div>
+                    <ul class="speed-options dropdown-menu">
+                        <li player-repeat-available-speed reverse ng-class="{'active': $speed == video.getPlaybackRate()}">
+                            <a dropdown-toggle player-set-speed="$speed">{{$speed}}x</a>
+                        </li>
+                    </ul>
                 </span>
             </div>
         </player-panel>
