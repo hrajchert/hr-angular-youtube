@@ -117,8 +117,10 @@
                     var relativeTime = 100 * marker.time / duration;
 
                     var adjustLeftPosition = function () {
-                        var x = relativeTime * elm.parent()[0].clientWidth / 100;
-                        elm.css('left', x + 'px');
+//                        var x = relativeTime * elm.parent()[0].clientWidth / 100;
+//                        elm.css('left', x + 'px');
+                        elm.css('left', relativeTime + '%');
+
                     };
                     adjustLeftPosition();
                     player.on('fullscreenEnabled', adjustLeftPosition);
