@@ -21,6 +21,8 @@
             this.blockFF = false;
             //Wether to show the marker in a status bar
             this.showMarker = true;
+            // Extra css class that can be added to the marker bar
+            this.barCss = '';
 
             // TODO: Put generate hash here
             this.name = null;

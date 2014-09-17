@@ -111,20 +111,17 @@
             restrict: 'C',
             require: '^youtubePlayer',
             link: function(scope, elm, attrs,youtubePlayerCtrl) {
+
                 youtubePlayerCtrl.getPlayer().then(function(player){
                     var duration = player.getDuration();
                     var marker = player.getMarker(attrs.markerName);
+                    // If the marker has extra css, add it
+                    if (marker.barCss !== '') {
+                        elm.addClass(marker.barCss);
+                    }
+
                     var relativeTime = 100 * marker.time / duration;
-
-                    var adjustLeftPosition = function () {
-//                        var x = relativeTime * elm.parent()[0].clientWidth / 100;
-//                        elm.css('left', x + 'px');
-                        elm.css('left', relativeTime + '%');
-
-                    };
-                    adjustLeftPosition();
-                    player.on('fullscreenEnabled', adjustLeftPosition);
-                    angular.element(window).bind('resize', adjustLeftPosition);
+                    elm.css('left', relativeTime + '%');
 
                 });
             }
