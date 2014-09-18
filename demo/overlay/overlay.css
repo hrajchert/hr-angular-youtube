@@ -55,7 +55,7 @@ player-progress-bar {
 }
 
 /* Hover indicator*/
-.hr-hover-indicator span{
+.hr-hover-indicator {
     background-color: black;
     padding: 1px 6px;
 }

@@ -8,28 +8,9 @@ var gulp      = require('gulp'),
     html2js   = require('gulp-ng-html2js'),
     replace   = require('gulp-replace');
 
-var fs = require('fs'),
-    when = require('when');
+var fs = require('fs');
 
-var optionsPromise = null;
-
-function loadOptions() {
-    if (optionsPromise === null) {
-        optionsPromise = when.promise(function(resolve,reject) {
-            fs.readFile('.env', function(err, file) {
-                if (err) {
-                    return reject(err);
-                }
-                var options = JSON.parse(file);
-                // TESTING!
-                options.updateBower = true;
-                // TODO: maybe fail if no dir is available?
-                resolve(options);
-            });
-        });
-    }
-    return optionsPromise;
-}
+var options = JSON.parse(fs.readFileSync ('.env'));
 
 gulp.task('process-scripts', function() {
     return gulp.src('./src/**/*.js')
@@ -73,70 +54,52 @@ gulp.task('process-styles', function() {
         .pipe(gulp.dest('./dist/'));
 });
 
-gulp.task('demo-cp', function(cb) {
-    loadOptions().then(function(options) {
-        gulp.src('./demo/**/*').
-            pipe(gulp.dest(options.pagesDir + '/demo')).
-            on('end', cb);
-    }, function() {
-        console.error('could not load options file');
-    });
+gulp.task('demo-cp', function() {
+    return gulp.src('./demo/**/*')
+        .pipe(gulp.dest(options.pagesDir + '/demo'));
 
 });
 
-gulp.task('docs-dist-cp',['process-scripts-with-tpl', 'process-styles'], function(cb) {
-    loadOptions().then(function(options) {
-        console.log('about to copy docs-dist-cp');
-        gulp.src('./dist/**/*').
-            pipe(gulp.dest(options.pagesDir + '/dist')).
-            on('end', cb);
-    });
-
+gulp.task('docs-dist-cp',['process-scripts-with-tpl', 'process-styles'], function() {
+    return gulp.src('./dist/**/*')
+        .pipe(gulp.dest(options.pagesDir + '/dist'));
 });
 
 
 gulp.task('docs-mddoc', function(cb) {
-    loadOptions().then(function(options) {
-        var mddoc  = require('mddoc'),
-            config = mddoc.config;
+    var mddoc  = require('mddoc'),
+        config = mddoc.config;
 
-        // Load the project settings
-        var mddocSettings = config.loadConfig(process.cwd(), {outputDir: options.pagesDir});
+    // Load the project settings
+    var mddocSettings = config.loadConfig(process.cwd(), {outputDir: options.pagesDir});
 
-        // Run the tool
-        mddocSettings.done(function(settings) {
-            mddoc.verbose(true);
-            mddoc.initialize(settings);
+    // Run the tool
+    mddocSettings.done(function(settings) {
+        mddoc.verbose(true);
+        mddoc.initialize(settings);
 
-            var steps = [
-                mddoc.readMarkdown,
-                mddoc.readCode,
-                mddoc.saveMetadata,
-                mddoc.replaceReferences,
-                mddoc.generateOutput
-            ];
+        var steps = [
+            mddoc.readMarkdown,
+            mddoc.readCode,
+            mddoc.saveMetadata,
+            mddoc.replaceReferences,
+            mddoc.generateOutput
+        ];
 
-            mddoc.run(steps).then(function () {
-                cb();
-            }, function(err) {
-                console.error('There was an error running the tool ' + JSON.stringify(err));
-                cb(false);
-            });
-        }, function (err) {
-            console.error('Coundn\'t read the settings '+ JSON.stringify(err));
+        mddoc.run(steps).then(function () {
+            cb();
+        }, function(err) {
+            console.error('There was an error running the tool ' + JSON.stringify(err));
             cb(false);
         });
     });
 });
 
-gulp.task('docs-clean', function(cb) {
-    loadOptions().then(function(options) {
-        gulp.src(options.pagesDir + '/**/*.*', { read: false })
+gulp.task('docs-clean', function() {
+    return gulp.src(options.pagesDir + '/**/*.*', { read: false })
         .pipe(rimraf({force:true}))
         // For some reason I need to add a dest, or no end is triggered
-        .pipe(gulp.dest(options.pagesDir))
-        .on('end', cb);
-    });
+        .pipe(gulp.dest(options.pagesDir));
 });
 
 gulp.task('build-docs', ['demo-cp', 'docs-dist-cp', 'docs-mddoc']);
@@ -147,15 +110,10 @@ gulp.task('docs', function(){
     return gulp.start('build-docs');
 });
 
-gulp.task('aaa', function() {
-    console.log('SUPER AAAA');
-    return gulp.start(['process-scripts-with-tpl','docs']);
-});
 gulp.task('watch', function() {
     // This should be process script, but for some reason is not updating :(
     //    gulp.watch('./src/**/*.js', ['process-scripts']);
     gulp.watch('./src/**/*.js', ['docs']);
-//    gulp.watch('./src/**/*.js', ['aaa']);
 
     gulp.watch('./assets/**/*.css', ['process-styles']);
     gulp.watch('./demo/**/*', ['docs']);
