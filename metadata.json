@@ -2,7 +2,7 @@
     "hrMd": {
         "gulpfile.js": {
             "version": "0.0.1",
-            "filehash": "28385a88c16a2feedf12562d26218eb1",
+            "filehash": "02ac475e44650c73343a0392ebc545b1",
             "refs": [
                 {
                     "name": false,
@@ -15,10 +15,10 @@
                     "status": "pending",
                     "directive": "code_warning",
                     "found": true,
-                    "snippetHash": "c4cbe3ea869d6dc2f7c0c408e01b1ad3",
+                    "snippetHash": "4e297f21ee1f4a4d00d28300f18d5eb7",
                     "char": {
-                        "from": 0,
-                        "to": 3916
+                        "from": 3331,
+                        "to": 3400
                     }
                 }
             ]
@@ -40,15 +40,38 @@
                     "found": true,
                     "snippetHash": "ecfbd79ff2575b2e0a3fa1f342cebaa6",
                     "char": {
-                        "from": 6215,
-                        "to": 6274
+                        "from": 6138,
+                        "to": 6197
+                    }
+                }
+            ]
+        },
+        "src/overlay/playerProgressBar.js": {
+            "version": "0.0.1",
+            "filehash": "aa0ace36ba09459a8ff5cb6827912b77",
+            "refs": [
+                {
+                    "name": false,
+                    "src": "src/overlay/playerProgressBar.js",
+                    "ref": {
+                        "text": "var getPercentageFromPageX ="
+                    },
+                    "lineNumber": 6,
+                    "refhash": "e459b00d32824367063914e9ea936a5b",
+                    "status": "pending",
+                    "directive": "code_warning",
+                    "found": true,
+                    "snippetHash": "e296c487f8e5fc6daa15052c3367d646",
+                    "char": {
+                        "from": 5443,
+                        "to": 5871
                     }
                 }
             ]
         },
         "src/overlay/showDirectives.js": {
             "version": "0.0.1",
-            "filehash": "65e1a0ab7b439c605c1d4b0d0aed8bc1",
+            "filehash": "c4ac5f8733818760c76f5c3a516dfcbf",
             "refs": [
                 {
                     "name": false,
@@ -65,6 +88,23 @@
                     "char": {
                         "from": 1673,
                         "to": 1698
+                    }
+                },
+                {
+                    "name": false,
+                    "src": "src/overlay/showDirectives.js",
+                    "ref": {
+                        "text": ".directive('showIfMuted'"
+                    },
+                    "lineNumber": 16,
+                    "refhash": "6c8cb5ddd5fa8ed7e1420aafcb9b36e7",
+                    "status": "pending",
+                    "directive": "code_todo",
+                    "found": true,
+                    "snippetHash": "b1ff10d9ab2fccb1da97d8979d0b82b3",
+                    "char": {
+                        "from": 52,
+                        "to": 4400
                     }
                 }
             ]
@@ -86,15 +126,15 @@
                     "found": true,
                     "snippetHash": "98f3d13a8505e583f29377b665bfcd11",
                     "char": {
-                        "from": 1354,
-                        "to": 1425
+                        "from": 1451,
+                        "to": 1522
                     }
                 }
             ]
         },
         "src/service/youtube-player.js": {
             "version": "0.0.1",
-            "filehash": "3ff40c9789a186e84d15f4ea9b705d59",
+            "filehash": "0411648a380460a57ff0b55a9514eedb",
             "refs": [
                 {
                     "name": false,
@@ -109,8 +149,25 @@
                     "found": true,
                     "snippetHash": "b870a32d90488833290edb255698d7ac",
                     "char": {
-                        "from": 7121,
-                        "to": 7162
+                        "from": 7386,
+                        "to": 7427
+                    }
+                },
+                {
+                    "name": false,
+                    "src": "src/service/youtube-player.js",
+                    "ref": {
+                        "text": "YoutubePlayer.prototype.isMuted "
+                    },
+                    "lineNumber": 18,
+                    "refhash": "ca3eda8b16fec0f9ac0e95e3e0c1a2fa",
+                    "status": "pending",
+                    "directive": "code_warning",
+                    "found": true,
+                    "snippetHash": "753b0692cb7820e966ca6ac1c14df075",
+                    "char": {
+                        "from": 16127,
+                        "to": 16224
                     }
                 }
             ]
@@ -134,15 +191,15 @@
                     "refhash": "79d4751c462e2ea35d5868fc56c88d0f",
                     "directive": "code_warning",
                     "found": true,
-                    "snippet": "var gulp      = require('gulp'),\n    concat    = require('gulp-concat'),\n    prefix    = require('gulp-autoprefixer'),\n    uglify    = require('gulp-uglify'),\n    minifycss = require('gulp-minify-css'),\n    rimraf    = require('gulp-rimraf'),\n    rename    = require('gulp-rename');\n\nvar fs = require('fs'),\n    when = require('when');\n\nvar options = null;\n\nfunction loadOptions() {\n    if (options === null) {\n        options = when.promise(function(resolve,reject) {\n            fs.readFile('.env', function(err, file) {\n                if (err) {\n                    return reject(err);\n                }\n                resolve(JSON.parse(file));\n            });\n        });\n    }\n    return options;\n}\n\ngulp.task('process-scripts', function() {\n    gulp.src('./src/**/*.js')\n        .pipe(concat('hr-angular-youtube.js'))\n        .pipe(gulp.dest('./dist/'))\n        .pipe(uglify())\n        .pipe(rename({suffix: '.min'}))\n        .pipe(gulp.dest('./dist/'));\n\n});\n\ngulp.task('process-styles', function() {\n    gulp.src('./assets/**/*.css')\n        .pipe(concat('hr-angular-youtube.css'))\n        .pipe(prefix('last 2 version'))\n        .pipe(gulp.dest('./dist'))\n        .pipe(minifycss())\n        .pipe(rename({suffix: '.min'}))\n        .pipe(gulp.dest('./dist/'));\n});\n\ngulp.task('demo-cp', function(cb) {\n    loadOptions().then(function(options) {\n        gulp.src('./demo/**/*').\n            pipe(gulp.dest(options.pagesDir + '/demo')).\n            on('end', cb);\n    }, function() {\n        console.error('could not load options file');\n    });\n\n});\n\ngulp.task('docs-dist-cp',['process-scripts', 'process-styles'], function(cb) {\n    loadOptions().then(function(options) {\n        gulp.src('./dist/**/*').\n            pipe(gulp.dest(options.pagesDir + '/dist')).\n            on('end', cb);\n    });\n\n});\n\n\ngulp.task('docs-mddoc', function(cb) {\n    loadOptions().then(function(options) {\n        var mddoc  = require('mddoc'),\n            config = mddoc.config;\n\n        // Load the project settings\n        var mddocSettings = config.loadConfig(process.cwd(), {outputDir: options.pagesDir});\n\n        // Run the tool\n        mddocSettings.done(function(settings) {\n            mddoc.verbose(true);\n            mddoc.initialize(settings);\n\n            var steps = [\n                mddoc.readMarkdown,\n                mddoc.readCode,\n                mddoc.saveMetadata,\n                mddoc.replaceReferences,\n                mddoc.generateOutput\n            ];\n\n            mddoc.run(steps).then(function () {\n                cb();\n            }, function(err) {\n                console.error('There was an error running the tool ' + JSON.stringify(err));\n                cb(false);\n            });\n        }, function (err) {\n            console.error('Coundn\\'t read the settings '+ JSON.stringify(err));\n            cb(false);\n        });\n\n    });\n});\n\ngulp.task('docs-clean', function(cb) {\n    loadOptions().then(function(options) {\n        gulp.src(options.pagesDir + '/**/*.*', { read: false })\n        .pipe(rimraf({force:true}))\n        // For some reason I need to add a dest, or no end is triggered\n        .pipe(gulp.dest(options.pagesDir))\n        .on('end', cb);\n    });\n});\n\ngulp.task('build-docs', ['demo-cp', 'docs-dist-cp', 'docs-mddoc']);\n\n// docs-clean removes git\n//gulp.task('docs',['docs-clean'], function(){\ngulp.task('docs', function(){\n    return gulp.start('build-docs');\n});\n\ngulp.task('watch', function() {\n    // This should be process script, but for some reason is not updating :(\n    //    gulp.watch('./src/**/*.js', ['process-scripts']);\n    gulp.watch('./src/**/*.js', ['process-scripts','docs']);\n    gulp.watch('./assets/**/*.css', ['process-styles']);\n    gulp.watch('./demo/**/*', ['docs']);\n    gulp.watch(['./docs/**/*', '!./docs/custom-generator/bower_components/**'], ['docs']);\n});\n\n\ngulp.task('default', ['process-scripts', 'process-styles', 'docs','watch']);",
-                    "snippetHash": "c4cbe3ea869d6dc2f7c0c408e01b1ad3",
+                    "snippet": "gulp.task('docs', function(){\n    return gulp.start('build-docs');\n})",
+                    "snippetHash": "4e297f21ee1f4a4d00d28300f18d5eb7",
                     "char": {
-                        "from": 0,
-                        "to": 3916
+                        "from": 3331,
+                        "to": 3400
                     }
                 }
             },
-            "filehash": "4f1564c6a9c6dabc0ac69116472608d5"
+            "filehash": "dc754654d961fc7042f4e8d80b0c3f8b"
         },
         "src/directive/youtube-player.js": {
             "version": "0.0.1",
@@ -164,12 +221,39 @@
                     "snippet": "return [elm[0].clientWidth, elm[0].clientHeight].join('x');",
                     "snippetHash": "ecfbd79ff2575b2e0a3fa1f342cebaa6",
                     "char": {
-                        "from": 6215,
-                        "to": 6274
+                        "from": 6138,
+                        "to": 6197
                     }
                 }
             },
-            "filehash": "04c97e2d71141e22610c211dd3b40f0c"
+            "filehash": "8737050c67e939b62f72b5fff5f70fcc"
+        },
+        "src/overlay/playerProgressBar.js": {
+            "version": "0.0.1",
+            "refs": {
+                "e459b00d32824367063914e9ea936a5b": {
+                    "loc": [
+                        {
+                            "file": "docs/src/overlay/playerProgressBar.js.md",
+                            "md": "src/overlay/playerProgressBar.js",
+                            "line": 6
+                        }
+                    ],
+                    "query": {
+                        "text": "var getPercentageFromPageX ="
+                    },
+                    "refhash": "e459b00d32824367063914e9ea936a5b",
+                    "directive": "code_warning",
+                    "found": true,
+                    "snippet": "var getPercentageFromPageX = function (pagex) {\n                    // Get the player bar x from the page x\n                    var left =  elm[0].getBoundingClientRect().left;\n                    var x = Math.min(Math.max(0,pagex - left),elm[0].clientWidth);\n\n                    // Get the percentage of the bar\n                    var xpercent = x / elm[0].clientWidth;\n                    return xpercent;\n                };",
+                    "snippetHash": "e296c487f8e5fc6daa15052c3367d646",
+                    "char": {
+                        "from": 5443,
+                        "to": 5871
+                    }
+                }
+            },
+            "filehash": "c42cd2d779ace47b5089d11451e84721"
         },
         "src/overlay/showDirectives.js": {
             "version": "0.0.1",
@@ -194,9 +278,30 @@
                         "from": 1673,
                         "to": 1698
                     }
+                },
+                "6c8cb5ddd5fa8ed7e1420aafcb9b36e7": {
+                    "loc": [
+                        {
+                            "file": "docs/src/overlay/showDirectives.js.md",
+                            "md": "src/overlay/showDirectives.js",
+                            "line": 16
+                        }
+                    ],
+                    "query": {
+                        "text": ".directive('showIfMuted'"
+                    },
+                    "refhash": "6c8cb5ddd5fa8ed7e1420aafcb9b36e7",
+                    "directive": "code_todo",
+                    "found": true,
+                    "snippet": "angular.module('hrAngularYoutube')\n\n    .directive('showIfPlayerIs', ['$animate', function($animate) {\n        return {\n            restrict: 'AE',\n            require: '^youtubePlayer',\n            link: function(scope, elm, attrs,youtubePlayerCtrl) {\n                // By default hide\n                $animate.addClass(elm, 'ng-hide');\n                youtubePlayerCtrl.getPlayer().then(function(player){\n                    // Convert the status list into an array of state numbers\n                    var status = [];\n                    // Convert it first into the array of string\n                    var stringStatus = attrs.showIfPlayerIs.toUpperCase().split(',');\n                    // For each state name, get its state number\n                    angular.forEach(stringStatus,function(s){\n                        if (YT.PlayerState.hasOwnProperty(s)) {\n                            status.push(YT.PlayerState[s]);\n                        }\n                    });\n\n                    var hideOrShow = function (event) {\n                        if (status.indexOf(event.data) !== -1) {\n                            $animate.removeClass(elm, 'ng-hide');\n                        } else {\n                            $animate.addClass(elm, 'ng-hide');\n                        }\n                    };\n                    // Subscribe to the state change event\n                    player.on('onStateChange', hideOrShow);\n                    // Show or hide based on initial status\n                    hideOrShow({data: player.getPlayerState()});\n                });\n            }\n        };\n    }])\n\n    .directive('showIfFullscreenEnabled', ['$animate', function($animate) {\n        return {\n            restrict: 'A',\n            require: '^youtubePlayer',\n            link: function(scope, elm, attrs,youtubePlayerCtrl) {\n                // By default hide\n                $animate.addClass(elm, 'ng-hide');\n                youtubePlayerCtrl.getPlayer().then(function(player){\n                    if (player.fullscreenEnabled()) {\n                        $animate.removeClass(elm, 'ng-hide');\n                    } else {\n                        $animate.addClass(elm, 'ng-hide');\n                    }\n                });\n            }\n        };\n    }])\n    .directive('showIfFullscreen', ['$animate', function($animate) {\n        return {\n            restrict: 'A',\n            require: '^youtubePlayer',\n            link: function(scope, elm, attrs,youtubePlayerCtrl) {\n                // By default hide\n                $animate.addClass(elm, 'ng-hide');\n                youtubePlayerCtrl.getPlayer().then(function(player){\n                    var hideOrShow = function () {\n                        var show = player.isFullscreen();\n                        if (attrs.showIfFullscreen === 'true') {\n                            show = !show;\n                        }\n\n                        if ( show ) {\n                            $animate.removeClass(elm, 'ng-hide');\n                        } else {\n                            $animate.addClass(elm, 'ng-hide');\n                        }\n                    };\n                    hideOrShow();\n                    player.on('fullscreenchange', hideOrShow);\n                });\n            }\n        };\n    }])\n\n    .directive('showIfMuted', ['$animate', function($animate) {\n        return {\n            restrict: 'A',\n            require: '^youtubePlayer',\n            link: function(scope, elm, attrs,youtubePlayerCtrl) {\n                // By default hide\n                $animate.addClass(elm, 'ng-hide');\n                youtubePlayerCtrl.getPlayer().then(function(player){\n                    var hideOrShow = function () {\n                        var show = !player.isMuted();\n                        if (attrs.showIfMuted === 'true') {\n                            show = !show;\n                        }\n\n                        if ( show ) {\n                            $animate.removeClass(elm, 'ng-hide');\n                        } else {\n                            $animate.addClass(elm, 'ng-hide');\n                        }\n                    };\n                    hideOrShow();\n                    scope.$watch(function(){\n                        return player.isMuted();\n                    }, hideOrShow);\n                });\n            }\n        };\n    }])",
+                    "snippetHash": "b1ff10d9ab2fccb1da97d8979d0b82b3",
+                    "char": {
+                        "from": 52,
+                        "to": 4400
+                    }
                 }
             },
-            "filehash": "367fb8392582c2de5f2278a12084d337"
+            "filehash": "9445f2230f946703c2140afdf8196205"
         },
         "src/service/youtube-marker.js": {
             "version": "0.0.1",
@@ -218,12 +323,12 @@
                     "snippet": "if (this.blockFF === true) {\n                return true;\n            }",
                     "snippetHash": "98f3d13a8505e583f29377b665bfcd11",
                     "char": {
-                        "from": 1354,
-                        "to": 1425
+                        "from": 1451,
+                        "to": 1522
                     }
                 }
             },
-            "filehash": "a37a5f9f06a59d1763b2cb678ae1d63d"
+            "filehash": "88b61da59c1f75152a83d38e6184c2ae"
         },
         "src/service/youtube-player.js": {
             "version": "0.0.1",
@@ -245,12 +350,33 @@
                     "snippet": "YoutubePlayer.prototype.fullscreenEnabled",
                     "snippetHash": "b870a32d90488833290edb255698d7ac",
                     "char": {
-                        "from": 7121,
-                        "to": 7162
+                        "from": 7386,
+                        "to": 7427
+                    }
+                },
+                "ca3eda8b16fec0f9ac0e95e3e0c1a2fa": {
+                    "loc": [
+                        {
+                            "file": "docs/src/service/youtube-player.js.md",
+                            "md": "src/service/youtube-player.js",
+                            "line": 18
+                        }
+                    ],
+                    "query": {
+                        "text": "YoutubePlayer.prototype.isMuted "
+                    },
+                    "refhash": "ca3eda8b16fec0f9ac0e95e3e0c1a2fa",
+                    "directive": "code_warning",
+                    "found": true,
+                    "snippet": "YoutubePlayer.prototype.isMuted = function () {\n                return this._muted;\n            }",
+                    "snippetHash": "753b0692cb7820e966ca6ac1c14df075",
+                    "char": {
+                        "from": 16127,
+                        "to": 16224
                     }
                 }
             },
-            "filehash": "6e575027b49042e8f82800ca1d9ab01c"
+            "filehash": "b23c6102177fb848091f56d1ff9590d6"
         }
     },
     "notFound": []

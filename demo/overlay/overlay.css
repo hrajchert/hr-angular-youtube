@@ -1,26 +1,33 @@
-player-bar {
+/* Progress Bar */
+player-progress-bar {
     background-color: rgb(70,70,70);
 }
 
-player-bar .hr-yt-loaded {
+.hr-yt-loaded {
     background-color: rgb(143,143,143);
 }
-player-bar .hr-yt-played {
+.hr-yt-played {
     background-color: red;
 }
-player-bar .hr-yt-handle {
+
+.hr-yt-handle {
     background-color: white;
 }
 
 
+/* Volume Bar */
 .hr-yt-volume-hr-bar {
-    background-color: rgb(70,70,70);;
-
+    background-color: rgb(143,143,143);
 }
+
+.hr-yt-setted {
+    background-color: red;
+}
+
+/* Control bar (lower panel) */
 .bottom-panel {
     position: absolute;
     bottom: 0;
-    height: 36px;
     background: rgba(0,0,0,1);
     width: 100%;
     font-family: Arial, Helvetica, sans-serif;
@@ -29,15 +36,59 @@ player-bar .hr-yt-handle {
 }
 
 .bottom-panel.ng-show {
-    bottom: 0;
+    transform: translateY(0);
 }
 
 .bottom-panel {
-    bottom: -37px;
-    transition: 0.5s ease-in bottom;
+    transform: translateY(100%);
+    transition: 0.5s ease-in transform;
 }
 
+.controls {
+    line-height: 25px;
+    height: 25px;
+}
 .control-element {
     float: left;
-    padding: 7px 10px;
+    padding: 0 10px;
+    cursor: pointer;
 }
+
+/* Hover indicator*/
+.hr-hover-indicator {
+    background-color: black;
+    padding: 1px 6px;
+}
+
+/* Playback Speed control */
+.speed-options {
+    background-color: black;
+    margin: 0 0 0 -50px;
+    width: 100px;
+    top: auto;
+    min-width: initial;
+    bottom: 33px;
+    list-style-type: none;
+    margin-bottom: 0;
+    padding: 0;
+}
+
+.speed-control .dropdown-menu > li > a {
+    color: white;
+}
+
+.speed-control .dropdown-menu > li > a:hover,
+.speed-control .dropdown-menu > li > a:focus {
+  color: white;
+  text-decoration: none;
+  background-color: rgb(90,90,90);
+}
+.speed-control .dropdown-menu > .active > a,
+.speed-control .dropdown-menu > .active > a:hover,
+.speed-control .dropdown-menu > .active > a:focus {
+  color: #fff;
+  text-decoration: none;
+  background-color: rgb(65, 65, 65);
+  outline: 0;
+}
+
