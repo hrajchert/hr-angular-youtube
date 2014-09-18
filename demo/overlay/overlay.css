@@ -54,6 +54,12 @@ player-progress-bar {
     cursor: pointer;
 }
 
+/* Hover indicator*/
+.hr-hover-indicator span{
+    background-color: black;
+    padding: 1px 6px;
+}
+
 /* Playback Speed control */
 .speed-options {
     background-color: black;

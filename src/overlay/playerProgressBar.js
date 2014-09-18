@@ -5,13 +5,7 @@
         return {
             restrict: 'E',
             require: '^youtubePlayer',
-            template: '<div yt-slider="onSliderUp($percentage)"' +
-                      '     yt-slider-down="onSliderDown()"' +
-                      '     yt-slider-move="onSliderMove($percentage)" style="width:100%;height:100%;">' +
-                      '  <div class="hr-yt-played"></div>' +
-                      '  <div class="hr-yt-loaded"></div>' +
-                      '  <div class="hr-yt-handle"></div>' +
-                      '</div>',
+            templateUrl: '/template/overlay/player-progress-bar.html',
             scope: {},
             link: function(scope, elm, attrs, youtubePlayerCtrl) {
                 youtubePlayerCtrl.getPlayer().then(function(player){
@@ -102,6 +96,64 @@
                     // New markers
                     player.on('markerAdd', addMarker );
 
+                });
+            }
+        };
+    }])
+    .directive('hoverIndicator', ['$document','$compile','$templateCache','$http','youtubeReadableTime',
+                                  function($document, $compile,$templateCache,$http, youtubeReadableTime) {
+        return {
+            restrict: 'A',
+            require: '^youtubePlayer',
+//            templateUrl: '/template/overlay/hover-indicator.html',
+            link: function(scope, elm, attrs,youtubePlayerCtrl) {
+
+                // TODO: This is copy pasted from ytSlider, refactor!!!
+                var getPercentageFromPageX = function (pagex) {
+                    // Get the player bar x from the page x
+                    var left =  elm[0].getBoundingClientRect().left;
+                    var x = Math.min(Math.max(0,pagex - left),elm[0].clientWidth);
+
+                    // Get the percentage of the bar
+                    var xpercent = x / elm[0].clientWidth;
+                    return xpercent;
+                };
+                // TODO: check how bootstrap does this
+                var template = $http.get('/template/overlay/hover-indicator.html', { cache: $templateCache }).then(function(response) {
+                    return response.data;
+                });
+                var indicatorElm = null;
+                var indicatorScope = scope.$new(true);
+                template.then(function(template) {
+                    indicatorElm = $compile(template)(indicatorScope);
+                    // Hide it
+                    indicatorElm.addClass('ng-hide');
+
+                    // Add it to the parent
+                    elm.parent().append(indicatorElm);
+                });
+
+                youtubePlayerCtrl.getPlayer().then(function(player){
+                    var duration = player.getDuration();
+
+                    var barMove = function(event) {
+                        var p = getPercentageFromPageX(event.pageX);
+                        console.log('super move!',p);
+                        indicatorScope.$apply(function(scope) {
+                            scope.time = youtubeReadableTime(p * duration);
+                        });
+                        indicatorElm.css('left', (p * 100) + '%');
+                    };
+
+                    elm.on('mouseenter', function() {
+                        $document.on('mousemove', barMove);
+                        indicatorElm.removeClass('ng-hide');
+
+                    });
+                    elm.on('mouseleave', function() {
+                        $document.off('mousemove', barMove);
+                        indicatorElm.addClass('ng-hide');
+                    });
                 });
             }
         };

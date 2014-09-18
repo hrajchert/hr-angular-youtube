@@ -12,7 +12,7 @@ module.exports = function(mddoc) {
 //        'modules' : ['demo','demoOverlay', 'demoControls'],
 
         'scripts' : [
-            'dist/hr-angular-youtube.js',
+            'dist/hr-angular-youtube-tpl.js',
             'demo/controls/controls.js',
             'demo/overlay/overlay.js',
             'demo/marker/marker.js',

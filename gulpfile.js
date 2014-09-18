@@ -4,7 +4,9 @@ var gulp      = require('gulp'),
     uglify    = require('gulp-uglify'),
     minifycss = require('gulp-minify-css'),
     rimraf    = require('gulp-rimraf'),
-    rename    = require('gulp-rename');
+    rename    = require('gulp-rename'),
+    html2js   = require('gulp-ng-html2js'),
+    replace   = require('gulp-replace');
 
 var fs = require('fs'),
     when = require('when');
@@ -39,6 +41,28 @@ gulp.task('process-scripts', function() {
 
 });
 
+gulp.task('process-templates', function() {
+    return gulp.src('template/**/*.html')
+        .pipe(html2js({
+            moduleName: 'hrAngularYoutubeTpls',
+            prefix :'/template/'
+        }))
+        .pipe(concat('templates.js'))
+        .pipe(gulp.dest('./dist/'));
+});
+//gulp.task('process-scripts-with-tpl',['process-templates'], function() {
+gulp.task('process-scripts-with-tpl',['process-templates','process-scripts'], function() {
+    //
+    return gulp.src(['./dist/templates.js','./dist/hr-angular-youtube.js'])
+        .pipe(concat('hr-angular-youtube-tpl.js'))
+        .pipe(replace('/*--MODULE-DEPENDENCIES--*/','\'hrAngularYoutubeTpls\''))
+        .pipe(gulp.dest('./dist/'))
+        .pipe(uglify())
+        .pipe(rename({suffix: '.min'}))
+        .pipe(gulp.dest('./dist/'));
+});
+
+
 gulp.task('process-styles', function() {
     return gulp.src('./assets/**/*.css')
         .pipe(concat('hr-angular-youtube.css'))
@@ -60,7 +84,7 @@ gulp.task('demo-cp', function(cb) {
 
 });
 
-gulp.task('docs-dist-cp',['process-scripts', 'process-styles'], function(cb) {
+gulp.task('docs-dist-cp',['process-scripts-with-tpl', 'process-styles'], function(cb) {
     loadOptions().then(function(options) {
         console.log('about to copy docs-dist-cp');
         gulp.src('./dist/**/*').
@@ -123,14 +147,20 @@ gulp.task('docs', function(){
     return gulp.start('build-docs');
 });
 
+gulp.task('aaa', function() {
+    console.log('SUPER AAAA');
+    return gulp.start(['process-scripts-with-tpl','docs']);
+});
 gulp.task('watch', function() {
     // This should be process script, but for some reason is not updating :(
     //    gulp.watch('./src/**/*.js', ['process-scripts']);
-    gulp.watch('./src/**/*.js', ['process-scripts','docs']);
+    gulp.watch('./src/**/*.js', ['docs']);
+//    gulp.watch('./src/**/*.js', ['aaa']);
+
     gulp.watch('./assets/**/*.css', ['process-styles']);
     gulp.watch('./demo/**/*', ['docs']);
     gulp.watch(['./docs/**/*', '!./docs/custom-generator/bower_components/**'], ['docs']);
 });
 
 
-gulp.task('default', ['process-scripts', 'process-styles', 'docs','watch']);
+gulp.task('default', ['process-scripts-with-tpl', 'process-styles', 'docs','watch']);

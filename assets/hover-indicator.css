@@ -1,0 +1,6 @@
+.hr-hover-indicator {
+    position: absolute;
+    bottom: 35px;
+    transform: translateX(-50%);
+}
+
