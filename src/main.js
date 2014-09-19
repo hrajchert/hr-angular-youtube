@@ -1,7 +1,5 @@
 /* global angular */
 (function(angular) {
-
-    console.log('main.js');
     // Add a default handler to avoid missing the event. This can happen if you add the script manually,
     // which can be useful for performance
     if (typeof window.onYouTubeIframeAPIReady === 'undefined') {

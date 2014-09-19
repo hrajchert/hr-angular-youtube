@@ -35,8 +35,6 @@ module.run(['$templateCache', function($templateCache) {
 
 /* global angular */
 (function(angular) {
-
-    console.log('main.js');
     // Add a default handler to avoid missing the event. This can happen if you add the script manually,
     // which can be useful for performance
     if (typeof window.onYouTubeIframeAPIReady === 'undefined') {
@@ -216,9 +214,21 @@ module.run(['$templateCache', function($templateCache) {
 
                     angular.element(window).bind('resize', resizeWithAspectRatio);
                     // If the window or the element size changes, resize the element
+                    var unit = 0;
                     scope.$watch(function(){
-                        return [elm[0].clientWidth, elm[0].clientHeight].join('x');
-                    }, resizeWithAspectRatio);
+                        var newUnit = 0;
+                        if (options.height) {
+                            newUnit = elm[0].clientHeight;
+                        } else {
+                            newUnit = elm[0].clientWidth;
+                        }
+                        if (unit !== newUnit && newUnit !== 0) {
+                            setTimeout(function() {
+                                scope.$apply(resizeWithAspectRatio);
+                            });
+                            unit = newUnit;
+                        }
+                    });
 
                 }
 
@@ -616,7 +626,6 @@ module.run(['$templateCache', function($templateCache) {
 
                     var barMove = function(event) {
                         var p = getPercentageFromPageX(event.pageX);
-                        console.log('super move!',p);
                         indicatorScope.$apply(function(scope) {
                             scope.time = youtubeReadableTime(p * duration);
                         });
@@ -832,6 +841,8 @@ module.run(['$templateCache', function($templateCache) {
                     angular.forEach(stringStatus,function(s){
                         if (YT.PlayerState.hasOwnProperty(s)) {
                             status.push(YT.PlayerState[s]);
+                        } else {
+                            throw new Error('Video status ' + s + ' is not defined');
                         }
                     });
 

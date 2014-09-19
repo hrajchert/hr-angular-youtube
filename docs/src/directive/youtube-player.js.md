@@ -7,6 +7,6 @@ Check if needed or add an option to add it separately or even separete this as a
     "src" : "src/directive/youtube-player.js",
     "priority" : 1,
     "ref" : {
-        "text" : "return [elm[0].clientWidth"
+        "text" : "unit !== newUnit"
     }
 %}

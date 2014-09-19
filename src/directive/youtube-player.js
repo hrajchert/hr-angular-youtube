@@ -151,9 +151,21 @@
 
                     angular.element(window).bind('resize', resizeWithAspectRatio);
                     // If the window or the element size changes, resize the element
+                    var unit = 0;
                     scope.$watch(function(){
-                        return [elm[0].clientWidth, elm[0].clientHeight].join('x');
-                    }, resizeWithAspectRatio);
+                        var newUnit = 0;
+                        if (options.height) {
+                            newUnit = elm[0].clientHeight;
+                        } else {
+                            newUnit = elm[0].clientWidth;
+                        }
+                        if (unit !== newUnit && newUnit !== 0) {
+                            setTimeout(function() {
+                                scope.$apply(resizeWithAspectRatio);
+                            });
+                            unit = newUnit;
+                        }
+                    });
 
                 }
 

@@ -138,7 +138,6 @@
 
                     var barMove = function(event) {
                         var p = getPercentageFromPageX(event.pageX);
-                        console.log('super move!',p);
                         indicatorScope.$apply(function(scope) {
                             scope.time = youtubeReadableTime(p * duration);
                         });

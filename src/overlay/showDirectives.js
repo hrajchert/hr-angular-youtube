@@ -20,6 +20,8 @@
                     angular.forEach(stringStatus,function(s){
                         if (YT.PlayerState.hasOwnProperty(s)) {
                             status.push(YT.PlayerState[s]);
+                        } else {
+                            throw new Error('Video status ' + s + ' is not defined');
                         }
                     });
 
