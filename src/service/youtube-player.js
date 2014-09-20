@@ -84,8 +84,8 @@
 
                 this.on('onStateChange', function(event) {
                     if (event.data === YT.PlayerState.PLAYING) {
-                        self._muted = self.player.isMuted();
                         self.setVolume(self.player.getVolume());
+                        self._setMuted(self.player.isMuted());
                     }
                 });
                 // TODO: Maybe add a markersByTime for performance
@@ -390,7 +390,7 @@
 
             YoutubePlayer.prototype.setVolume = function (volume) {
                 // If volume is 0, then set as muted, if not is unmuted
-                this._muted = volume === 0;
+                this._setMuted(volume === 0);
                 this._volume = volume;
                 this.player.setVolume(volume);
             };
@@ -402,13 +402,21 @@
                 return this._volume;
             };
 
+            YoutubePlayer.prototype._setMuted = function (muted) {
+                var changed = this._muted !== muted;
+                this._muted = muted;
+                if (changed) {
+                    this.emit('muteChange');
+                }
+            };
+
             YoutubePlayer.prototype.mute = function () {
-                this._muted = true;
+                this._setMuted(true);
                 this.player.mute();
             };
 
             YoutubePlayer.prototype.unMute = function () {
-                this._muted = false;
+                this._setMuted(false);
                 this.player.unMute();
             };
 

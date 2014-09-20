@@ -106,9 +106,7 @@
                         }
                     };
                     hideOrShow();
-                    scope.$watch(function(){
-                        return player.isMuted();
-                    }, hideOrShow);
+                    player.on('muteChange', hideOrShow);
                 });
             }
         };

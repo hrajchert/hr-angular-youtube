@@ -22,3 +22,16 @@ state myself
         "text" : "YoutubePlayer.prototype.isMuted "
     }
 %}
+
+**Warning:**
+This is setting a handler that must be removed manually, I can add logic to first, add it to a player event list, then, on object destroy
+remove all handlers from the rootScope
+{:.alert .alert-danger }
+
+{%code_warning
+    "src" : "src/service/youtube-player.js",
+    "priority" : 9,
+    "ref" : {
+        "text" : "return $rootScope.$on"
+    }
+%}
