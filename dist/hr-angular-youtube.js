@@ -752,8 +752,6 @@
                     $handle    = angular.element(elm[0].querySelector('.hr-yt-handle'));
 
                 youtubePlayerCtrl.getPlayer().then(function(player){
-                    console.log('Volume player', player.getVolume());
-
                     var updateVolumeBar = function(volume) {
                         var handleX = volume * $volumeBar[0].clientWidth - $handle[0].clientWidth / 2  ;
                         handleX = Math.min(Math.max(0, handleX),$volumeBar[0].clientWidth - $handle[0].clientWidth / 2);
@@ -1348,7 +1346,7 @@
 
 
                 var self = this;
-                var lastMarkerTime = 0;
+                var lastMarkerTime = -1;
                 this.onProgress(function() {
                     var currentTime = self.getCurrentTime();
                     var newLastTime = lastMarkerTime;

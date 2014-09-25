@@ -325,7 +325,7 @@
 
 
                 var self = this;
-                var lastMarkerTime = 0;
+                var lastMarkerTime = -1;
                 this.onProgress(function() {
                     var currentTime = self.getCurrentTime();
                     var newLastTime = lastMarkerTime;
