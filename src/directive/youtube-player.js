@@ -35,11 +35,18 @@
                 this.getPlayer = function () {
                     return player.promise;
                 };
+                this.destroyPlayer = function () {
+                    player.promise.then(function(p) {
+                        p.destroy();
+                    });
+                    player = $q.defer();
+                };
 
                 var $overlayElm;
                 this.setOverlayElement = function (elm) {
                     $overlayElm = elm;
                 };
+
 
                 this.getOverlayElement = function () {
                     return $overlayElm;
@@ -58,9 +65,6 @@
             link: function (scope, elm, attrs, controllers) {
                 var youtubePlayerCtrl = controllers[0],
                     ngModelCtrl = controllers[1];
-
-                var player = null;
-                var playerPromise = null;
 
                 elm.css('position','relative');
                 elm.css('display','block');
@@ -88,7 +92,10 @@
                     }
 
                 });
+
+                var instanceCreated = false;
                 var createVideo = function() {
+                    instanceCreated = true;
                     options.videoId = scope.videoId;
                     if (!options.hasOwnProperty('width') && !options.hasOwnProperty('height') ) {
                         options.height = '390';
@@ -97,8 +104,7 @@
                     elm.css('height',convertToUnits(options.height));
                     elm.css('width',convertToUnits(options.width));
 
-                    playerPromise = youtube.loadPlayer($videoDiv, options).then(function(p) {
-                        player = p;
+                    youtube.loadPlayer($videoDiv, options).then(function(player) {
                         youtubePlayerCtrl.setPlayer(player);
 
                         player.setFullScreenElement($outerDiv[0]);
@@ -107,7 +113,7 @@
                         if (typeof ngModelCtrl !== 'undefined') {
                             ngModelCtrl.$setViewValue(player);
                         }
-                        return p;
+                        return player;
                     });
 
                 };
@@ -116,10 +122,10 @@
                     if (typeof id === 'undefined') {
                         return;
                     }
-                    if (playerPromise === null) {
+                    if (!instanceCreated) {
                         createVideo();
                     } else {
-                        playerPromise.then(function(p){
+                        youtubePlayerCtrl.getPlayer().then(function(p){
                             p.loadVideoById(id);
                         });
                     }
@@ -170,9 +176,8 @@
                 }
 
                 scope.$on('$destroy', function() {
-                    youtubePlayerCtrl.setPlayer(null);
-                    player.destroy();
-                    player = null;
+                    youtubePlayerCtrl.destroyPlayer();
+                    instanceCreated = false;
                     if (typeof ngModelCtrl !== 'undefined') {
                         ngModelCtrl.$setViewValue(undefined);
                     }
