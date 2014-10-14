@@ -337,6 +337,39 @@ module.run(['$templateCache', function($templateCache) {
 /* global angular */
 (function(angular) {
     angular.module('hrAngularYoutube')
+    .directive('playerCurrentQuality',  function() {
+        return {
+            restrict: 'EA',
+            require: '^youtubePlayer',
+            link: function(scope, elm, attrs,youtubePlayerCtrl) {
+                youtubePlayerCtrl.getPlayer().then(function(player){
+                    var setPlaybackQuality = function () {
+                        var quality;
+                        if (attrs.hasOwnProperty('intendedQuality')) {
+                            var showRealAuto = false;
+                            if (attrs.hasOwnProperty('showRealAuto')) {
+                                showRealAuto = true;
+                            }
+                            quality = player.getHumanIntendedPlaybackQuality(showRealAuto);
+                        } else {
+                            quality = player.getHumanPlaybackQuality ();
+                        }
+                        elm.html(quality);
+                    };
+                    player.on('onPlaybackQualityChange',setPlaybackQuality);
+                    player.on('onIntentPlaybackQualityChange',setPlaybackQuality);
+                    setPlaybackQuality();
+                });
+            }
+        };
+    });
+})(angular);
+
+
+
+/* global angular */
+(function(angular) {
+    angular.module('hrAngularYoutube')
     .directive('playerCurrentSpeed',  function() {
         return {
             restrict: 'EA',
@@ -674,6 +707,47 @@ module.run(['$templateCache', function($templateCache) {
 })(angular);
 
 
+/* global angular, YT */
+(function(angular) {
+    angular.module('hrAngularYoutube')
+    .directive('playerRepeatAvailableQuality', ['youtubeQualityMap',  function(youtubeQualityMap) {
+        return {
+            restrict: 'A',
+            template: function (tElm) {
+                tElm.removeAttr('player-repeat-available-quality');
+                tElm.attr('ng-repeat','$quality in availableQuality');
+                return tElm[0].outerHTML;
+            },
+            replace: true,
+            priority: 1000,
+            scope: {
+
+            },
+            require: '^youtubePlayer',
+            link: function(scope, elm, attrs, youtubePlayerCtrl) {
+                youtubePlayerCtrl.getPlayer().then(function(player){
+                    // Youtube doesnt inform you on the available qualities until loading video
+                    var unbind = player.on('onStateChange', function(event) {
+                        if (event.data === YT.PlayerState.PLAYING) {
+                            unbind();
+                            scope.availableQuality = youtubeQualityMap.convertToYoutubeArray(player.getAvailableQualityLevels());
+                            if (attrs.hasOwnProperty('reverse')) {
+                                scope.availableQuality.reverse();
+                            }
+
+                        }
+                    });
+                    // So default is Auto
+                    scope.availableQuality = ['Auto'];
+
+                });
+            }
+
+        };
+    }]);
+})(angular);
+
+
 
 /* global angular */
 (function(angular) {
@@ -705,6 +779,29 @@ module.run(['$templateCache', function($templateCache) {
 
         };
     });
+})(angular);
+
+
+/* global angular */
+(function(angular) {
+    angular.module('hrAngularYoutube')
+    .directive('playerSetQuality',  ['$parse', function($parse) {
+        return {
+            restrict: 'A',
+            require: '^youtubePlayer',
+            link: function(scope, elm, attrs,youtubePlayerCtrl) {
+                var fn = $parse(attrs.playerSetQuality);
+
+                youtubePlayerCtrl.getPlayer().then(function(player){
+                    elm.on('click', function() {
+                        scope.$apply(function() {
+                            player.setHumanPlaybackQuality(fn(scope));
+                        });
+                    });
+                });
+            }
+        };
+    }]);
 })(angular);
 
 
@@ -1104,8 +1201,8 @@ module.run(['$templateCache', function($templateCache) {
         };
 
 
-        this.$get = ['$window','$q', '$interval','$rootScope', 'youtubeReadableTime',
-                     function ($window, $q, $interval, $rootScope, youtubeReadableTime) {
+        this.$get = ['$window','$q', '$interval','$rootScope', 'youtubeReadableTime', 'youtubeQualityMap',
+                     function ($window, $q, $interval, $rootScope, youtubeReadableTime, youtubeQualityMap) {
             var apiLoaded = $q.defer();
 
             var apiLoadedPromise = apiLoaded.promise;
@@ -1142,6 +1239,7 @@ module.run(['$templateCache', function($templateCache) {
                 this.markersByName = {};
                 this._muted = false;
                 this._volume = 100;
+                this._intendedQuality = 'auto';
 
                 this.on('onStateChange', function(event) {
                     if (event.data === YT.PlayerState.PLAYING) {
@@ -1495,6 +1593,29 @@ module.run(['$templateCache', function($templateCache) {
                 }
             };
 
+            YoutubePlayer.prototype.getHumanPlaybackQuality = function () {
+                return youtubeQualityMap.convertToYoutube(this.player.getPlaybackQuality());
+            };
+
+
+            YoutubePlayer.prototype.getHumanIntendedPlaybackQuality = function (showRealAuto) {
+                var ans = youtubeQualityMap.convertToYoutube(this._intendedQuality);
+                if (ans === 'Auto' && showRealAuto && this.getHumanPlaybackQuality() !== 'Auto') {
+                    ans += ' ('+ this.getHumanPlaybackQuality() +')';
+                }
+                return ans;
+            };
+
+            YoutubePlayer.prototype.setHumanPlaybackQuality = function (q) {
+                var quality = youtubeQualityMap.convertFromYoutube(q);
+                this.setPlaybackQuality(quality);
+                this.emit('onIntentPlaybackQualityChange');
+            };
+            YoutubePlayer.prototype.setPlaybackQuality = function (q) {
+                this._intendedQuality = q;
+                this.player.setPlaybackQuality(q);
+            };
+
             // Youtube callback when API is ready
             $window.onYouTubeIframeAPIReady = function () {
                 apiLoaded.resolve();
@@ -1520,6 +1641,60 @@ module.run(['$templateCache', function($templateCache) {
             };
         }];
 
+    });
+
+
+})(angular);
+
+/* global angular */
+(function(angular) {
+
+
+    angular.module('hrAngularYoutube')
+
+    .factory('youtubeQualityMap', function () {
+        var map = {
+            'hd1080' : '1080p',
+            'hd720' : '720p',
+            'large' : '480p',
+            'medium' : '360p',
+            'small' : '240p',
+            'tiny' : '144p',
+            'auto' : 'Auto'
+        };
+        var inverseMap = {};
+        var inverse;
+        for (var q in map) {
+            inverse = map[q];
+            inverseMap[inverse] = q;
+        }
+
+        function _doConvertToYoutube(q) {
+            var ans = map[q];
+            if (!ans) {
+                ans = 'Auto';
+            }
+            return ans;
+        }
+        return {
+            convertToYoutube : function (q) {
+                return _doConvertToYoutube(q);
+            },
+            convertFromYoutube: function (q) {
+                var ans = inverseMap[q];
+                if (!ans) {
+                    ans = 'default';
+                }
+                return ans;
+            },
+            convertToYoutubeArray : function (arr) {
+                var ans = [];
+                for (var i = 0; i<arr.length; i++) {
+                    ans.push(_doConvertToYoutube(arr[i]));
+                }
+                return ans;
+            }
+        };
     });
 
 

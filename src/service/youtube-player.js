@@ -43,8 +43,8 @@
         };
 
 
-        this.$get = ['$window','$q', '$interval','$rootScope', 'youtubeReadableTime',
-                     function ($window, $q, $interval, $rootScope, youtubeReadableTime) {
+        this.$get = ['$window','$q', '$interval','$rootScope', 'youtubeReadableTime', 'youtubeQualityMap',
+                     function ($window, $q, $interval, $rootScope, youtubeReadableTime, youtubeQualityMap) {
             var apiLoaded = $q.defer();
 
             var apiLoadedPromise = apiLoaded.promise;
@@ -81,6 +81,7 @@
                 this.markersByName = {};
                 this._muted = false;
                 this._volume = 100;
+                this._intendedQuality = 'auto';
 
                 this.on('onStateChange', function(event) {
                     if (event.data === YT.PlayerState.PLAYING) {
@@ -432,6 +433,29 @@
                 } else {
                     this.mute();
                 }
+            };
+
+            YoutubePlayer.prototype.getHumanPlaybackQuality = function () {
+                return youtubeQualityMap.convertToYoutube(this.player.getPlaybackQuality());
+            };
+
+
+            YoutubePlayer.prototype.getHumanIntendedPlaybackQuality = function (showRealAuto) {
+                var ans = youtubeQualityMap.convertToYoutube(this._intendedQuality);
+                if (ans === 'Auto' && showRealAuto && this.getHumanPlaybackQuality() !== 'Auto') {
+                    ans += ' ('+ this.getHumanPlaybackQuality() +')';
+                }
+                return ans;
+            };
+
+            YoutubePlayer.prototype.setHumanPlaybackQuality = function (q) {
+                var quality = youtubeQualityMap.convertFromYoutube(q);
+                this.setPlaybackQuality(quality);
+                this.emit('onIntentPlaybackQualityChange');
+            };
+            YoutubePlayer.prototype.setPlaybackQuality = function (q) {
+                this._intendedQuality = q;
+                this.player.setPlaybackQuality(q);
             };
 
             // Youtube callback when API is ready

@@ -61,7 +61,7 @@ player-progress-bar {
 }
 
 /* Playback Speed control */
-.speed-options {
+.dropdown-control-options {
     background-color: black;
     margin: 0 0 0 -50px;
     width: 100px;
@@ -73,19 +73,19 @@ player-progress-bar {
     padding: 0;
 }
 
-.speed-control .dropdown-menu > li > a {
+.dropdown-control .dropdown-menu > li > a {
     color: white;
 }
 
-.speed-control .dropdown-menu > li > a:hover,
-.speed-control .dropdown-menu > li > a:focus {
+.dropdown-control .dropdown-menu > li > a:hover,
+.dropdown-control .dropdown-menu > li > a:focus {
   color: white;
   text-decoration: none;
   background-color: rgb(90,90,90);
 }
-.speed-control .dropdown-menu > .active > a,
-.speed-control .dropdown-menu > .active > a:hover,
-.speed-control .dropdown-menu > .active > a:focus {
+.dropdown-control .dropdown-menu > .active > a,
+.dropdown-control .dropdown-menu > .active > a:hover,
+.dropdown-control .dropdown-menu > .active > a:focus {
   color: #fff;
   text-decoration: none;
   background-color: rgb(65, 65, 65);
