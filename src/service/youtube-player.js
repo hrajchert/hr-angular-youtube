@@ -227,6 +227,8 @@
 
                 // Seek to sec
                 this.player.seekTo(sec, allowSeekAhead);
+                // Inform of the intent to seek
+                self.emit('seekToBegin', {newTime: sec, oldTime: initialTime});
 
                 // Check on a time interval that the seek has been completed
                 var promise = $interval(function() {

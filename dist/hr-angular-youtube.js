@@ -533,6 +533,8 @@
                         // The interval calls updateProgress with a number, so we need to add this inner fn
                         updateProgress();
                     });
+                    // When someone seeks the video update the progress
+                    player.on('seekToBegin', updateProgress);
                     // Update the progress every time there state changes
                     player.on('onStateChange', updateProgress);
 
@@ -558,8 +560,6 @@
                         if (playStatus === YT.PlayerState.PLAYING || playStatus === YT.PlayerState.PAUSED) {
                             // Load it in the player
                             player.eventSeekTo(sec, true);
-                            // Force update progress because seekTo takes its time
-                            updateProgress(sec);
                         } else {
                             player.startLoading(sec);
                         }
@@ -1350,6 +1350,8 @@
 
                 // Seek to sec
                 this.player.seekTo(sec, allowSeekAhead);
+                // Inform of the intent to seek
+                self.emit('seekToBegin', {newTime: sec, oldTime: initialTime});
 
                 // Check on a time interval that the seek has been completed
                 var promise = $interval(function() {

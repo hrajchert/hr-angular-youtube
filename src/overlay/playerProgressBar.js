@@ -42,6 +42,8 @@
                         // The interval calls updateProgress with a number, so we need to add this inner fn
                         updateProgress();
                     });
+                    // When someone seeks the video update the progress
+                    player.on('seekToBegin', updateProgress);
                     // Update the progress every time there state changes
                     player.on('onStateChange', updateProgress);
 
@@ -67,8 +69,6 @@
                         if (playStatus === YT.PlayerState.PLAYING || playStatus === YT.PlayerState.PAUSED) {
                             // Load it in the player
                             player.eventSeekTo(sec, true);
-                            // Force update progress because seekTo takes its time
-                            updateProgress(sec);
                         } else {
                             player.startLoading(sec);
                         }
