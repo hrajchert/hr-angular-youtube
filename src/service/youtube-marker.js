@@ -39,13 +39,31 @@
             }
         };
 
-        YoutubeMarker.prototype.shouldLaunchOnSeek = function () {
+        YoutubeMarker.prototype.shouldLaunchOnSeek = function (seekTime) {
+            if (this.getLaunchOnSeek()) {
+                if (this.hasEndTime()) {
+                    return this.inRange(seekTime.newTime);
+                } else {
+                    return this.time >= seekTime.oldTime && this.time <= seekTime.newTime;
+                }
+            }
+        };
+
+        YoutubeMarker.prototype.getLaunchOnSeek = function () {
             // Block when fast forward implies launch on seek
-            if (this.blockFF === true) {
+            if (this.getBlockOnFF()) {
                 return true;
             }
 
             return this.launchOnSeek;
+        };
+
+        YoutubeMarker.prototype.getBlockOnFF = function () {
+            // If already fired and we only want to fire once, it shouldn't block
+            if (this._runCount > 0 && this.fireOnce ) {
+                return false;
+            }
+            return this.blockFF;
         };
 
         YoutubeMarker.prototype.hasEndTime = function () {
@@ -62,12 +80,15 @@
 
         YoutubeMarker.prototype.startedIn = function (begin, end) {
             // If already fired and we only want to fire once, do nothing
-            if (this._runCount > 0 && this.fireOnce ) {
-                return false;
-            }
+//            if (this._runCount > 0 && this.fireOnce ) {
+//                return false;
+//            }
 
             return this.time > begin && this.time <= end;
         };
+
+
+
 
         YoutubeMarker.prototype.endedIn = function (begin, end) {
             if (!this.hasEndTime()) {
@@ -83,9 +104,9 @@
 
         YoutubeMarker.prototype.start = function () {
             // If already fired and we only want to fire once, do nothing
-//            if (this._runCount > 0 && this.fireOnce ) {
-//                return false;
-//            }
+            if (this._runCount > 0 && this.fireOnce ) {
+                return false;
+            }
 
             this._runCount++;
             this._isRunning = true;

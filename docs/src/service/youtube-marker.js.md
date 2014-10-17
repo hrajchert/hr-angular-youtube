@@ -7,12 +7,3 @@ I would like to have the generate hash here instead of the service, but generate
         "text" : "this.name = null"
     }
 %}
-It would be nice if blockFF can be a function or a value
-
-{%code_todo
-    "src" : "src/service/youtube-marker.js",
-    "priority" : 3,
-    "ref" : {
-        "text" : "if (this.blockFF === true) {"
-    }
-%}

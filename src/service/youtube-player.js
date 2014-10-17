@@ -215,7 +215,7 @@
                 // If there is a blocking marker, don't allow to seek further than it
                 angular.forEach(self.markersByName, function(marker) {
                     // If its not blocking, we dont care
-                    if (marker.blockFF === false) {
+                    if (!marker.getBlockOnFF()) {
                         return;
                     }
 
@@ -334,7 +334,7 @@
                     var newLastTime = lastMarkerTime;
                     angular.forEach(self.markersByName, function(marker) {
                         // If the marker time has past and we haven't launched this marker yet
-                        if (marker.startedIn(lastMarkerTime, currentTime)) {
+                        if (marker.startedIn(lastMarkerTime, currentTime) ) {
                             runMarker(marker);
                             newLastTime = Math.max(newLastTime, marker.time);
                         }
@@ -356,11 +356,8 @@
                             }
                         }else {
                             // If the marker is not running, see if we need to start it
-                            if (marker.shouldLaunchOnSeek()) {
-                                if (marker.hasEndTime() && marker.inRange(seekTime.newTime) ||
-                                    !marker.hasEndTime() && marker.startedIn(seekTime.oldTime, seekTime.newTime)) {
-                                    runMarker(marker);
-                                }
+                            if (marker.shouldLaunchOnSeek(seekTime)) {
+                                runMarker(marker);
                             }
                         }
 
