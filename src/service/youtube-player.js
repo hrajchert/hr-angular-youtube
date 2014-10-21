@@ -175,6 +175,13 @@
                 return false;
             };
 
+            YoutubePlayer.prototype.removeFullscreen = function () {
+                if (this.fullscreenEnabled()) {
+                    if (this.isFullscreen()) {
+                        this.toggleFullscreen();
+                    }
+                }
+            };
             YoutubePlayer.prototype.toggleFullscreen = function () {
                 if (this.fullscreenEnabled()) {
                     var isFullscreen = screenfull.isFullscreen;
