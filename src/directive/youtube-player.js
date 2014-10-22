@@ -18,10 +18,7 @@
         return {
             restrict: 'EA',
             require: ['youtubePlayer', '?ngModel'],
-            template: '<div class="hr-yt-wrapper">' +
-                      '  <div class="hr-yt-video-place-holder"></div>' +
-                      '  <div class="hr-yt-overlay" ng-transclude=""></div>' +
-                      '</div>',
+            templateUrl: '/template/youtubePlayer.html',
             scope: {
                 videoId: '='
             },
@@ -68,7 +65,6 @@
 
                 elm.css('position','relative');
                 elm.css('display','block');
-
                 // Save the overlay element in the controller so child directives can use it
                 // TODO: check this out again
                 youtubePlayerCtrl.setOverlayElement(elm);

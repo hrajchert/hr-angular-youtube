@@ -5,10 +5,65 @@ try {
   module = angular.module('hrAngularYoutubeTpls', []);
 }
 module.run(['$templateCache', function($templateCache) {
+  $templateCache.put('/template/youtubePlayer.html',
+    '<div class="hr-yt-wrapper">\n' +
+    '    <div class="hr-yt-video-place-holder"></div>\n' +
+    '    <div class="hr-yt-overlay" ng-transclude=""></div>\n' +
+    '</div>\n' +
+    '');
+}]);
+})();
+
+(function(module) {
+try {
+  module = angular.module('hrAngularYoutubeTpls');
+} catch (e) {
+  module = angular.module('hrAngularYoutubeTpls', []);
+}
+module.run(['$templateCache', function($templateCache) {
   $templateCache.put('/template/overlay/hover-indicator.html',
     '<div class="hr-hover-indicator">\n' +
     '    <span ng-bind="time"></span>\n' +
     '</div>\n' +
+    '');
+}]);
+})();
+
+(function(module) {
+try {
+  module = angular.module('hrAngularYoutubeTpls');
+} catch (e) {
+  module = angular.module('hrAngularYoutubeTpls', []);
+}
+module.run(['$templateCache', function($templateCache) {
+  $templateCache.put('/template/overlay/player-panel.html',
+    '<div ng-transclude=""></div>\n' +
+    '');
+}]);
+})();
+
+(function(module) {
+try {
+  module = angular.module('hrAngularYoutubeTpls');
+} catch (e) {
+  module = angular.module('hrAngularYoutubeTpls', []);
+}
+module.run(['$templateCache', function($templateCache) {
+  $templateCache.put('/template/overlay/player-pause.html',
+    '<div style="display: inherit" ng-transclude=""></div>\n' +
+    '');
+}]);
+})();
+
+(function(module) {
+try {
+  module = angular.module('hrAngularYoutubeTpls');
+} catch (e) {
+  module = angular.module('hrAngularYoutubeTpls', []);
+}
+module.run(['$templateCache', function($templateCache) {
+  $templateCache.put('/template/overlay/player-play.html',
+    '<div style="display: inherit" ng-transclude=""></div>\n' +
     '');
 }]);
 })();
@@ -28,6 +83,38 @@ module.run(['$templateCache', function($templateCache) {
     '        <div class="hr-yt-played"></div>\n' +
     '        <div class="hr-yt-loaded"></div>\n' +
     '        <div class="hr-yt-handle"></div>\n' +
+    '</div>\n' +
+    '');
+}]);
+})();
+
+(function(module) {
+try {
+  module = angular.module('hrAngularYoutubeTpls');
+} catch (e) {
+  module = angular.module('hrAngularYoutubeTpls', []);
+}
+module.run(['$templateCache', function($templateCache) {
+  $templateCache.put('/template/overlay/player-toggle-fullscreen.html',
+    '<div style="display: inherit" ng-transclude=""></div>\n' +
+    '');
+}]);
+})();
+
+(function(module) {
+try {
+  module = angular.module('hrAngularYoutubeTpls');
+} catch (e) {
+  module = angular.module('hrAngularYoutubeTpls', []);
+}
+module.run(['$templateCache', function($templateCache) {
+  $templateCache.put('/template/overlay/player-volume-horizontal.html',
+    '<div ng-click="toggleMute()" class="ng-transclude"></div>\n' +
+    '    <div class="hr-yt-volume-hr-bar"\n' +
+    '         yt-slider-move="onSliderMove($percentage)"\n' +
+    '         yt-slider="onSliderUp($percentage)">\n' +
+    '    <div class="hr-yt-setted"></div>\n' +
+    '    <div class="hr-yt-handle"></div>\n' +
     '</div>\n' +
     '');
 }]);
@@ -81,10 +168,7 @@ module.run(['$templateCache', function($templateCache) {
         return {
             restrict: 'EA',
             require: ['youtubePlayer', '?ngModel'],
-            template: '<div class="hr-yt-wrapper">' +
-                      '  <div class="hr-yt-video-place-holder"></div>' +
-                      '  <div class="hr-yt-overlay" ng-transclude=""></div>' +
-                      '</div>',
+            templateUrl: '/template/youtubePlayer.html',
             scope: {
                 videoId: '='
             },
@@ -131,7 +215,6 @@ module.run(['$templateCache', function($templateCache) {
 
                 elm.css('position','relative');
                 elm.css('display','block');
-
                 // Save the overlay element in the controller so child directives can use it
                 // TODO: check this out again
                 youtubePlayerCtrl.setOverlayElement(elm);
@@ -417,7 +500,7 @@ module.run(['$templateCache', function($templateCache) {
         return {
             restrict: 'E',
             require: '^youtubePlayer',
-            template: '<div ng-transclude=""></div>',
+            templateUrl: '/template/overlay/player-panel.html',
             transclude: true,
             link: function(scope, elm, attrs,youtubePlayerCtrl) {
                 youtubePlayerCtrl.getPlayer().then(function(player){
@@ -489,7 +572,7 @@ module.run(['$templateCache', function($templateCache) {
         return {
             restrict: 'E',
             require: '^youtubePlayer',
-            template: '<div style="display: inherit" ng-transclude=""></div>',
+            templateUrl: '/template/overlay/player-pause.html',
             transclude: true,
             link: function(scope, elm, attrs,youtubePlayerCtrl) {
                 youtubePlayerCtrl.getPlayer().then(function(player){
@@ -510,7 +593,7 @@ module.run(['$templateCache', function($templateCache) {
         return {
             restrict: 'E',
             require: '^youtubePlayer',
-            template: '<div style="display: inherit" ng-transclude=""></div>',
+            templateUrl: '/template/overlay/player-play.html',
             transclude: true,
             link: function(scope, elm, attrs,youtubePlayerCtrl) {
                 youtubePlayerCtrl.getPlayer().then(function(player){
@@ -836,7 +919,7 @@ module.run(['$templateCache', function($templateCache) {
         return {
             restrict: 'E',
             require: '^youtubePlayer',
-            template: '<div style="display: inherit" ng-transclude=""></div>',
+            templateUrl: '/template/overlay/player-toggle-fullscreen.html',
             transclude: true,
             link: function(scope, elm, attrs,youtubePlayerCtrl) {
                 youtubePlayerCtrl.getPlayer().then(function(player){
@@ -874,13 +957,7 @@ module.run(['$templateCache', function($templateCache) {
         return {
             restrict: 'E',
             require: '^youtubePlayer',
-            template: '<div ng-click="toggleMute()" class="ng-transclude"></div>'+
-                      '<div class="hr-yt-volume-hr-bar"' +
-                      '     yt-slider-move="onSliderMove($percentage)"' +
-                      '     yt-slider="onSliderUp($percentage)">'+
-                      '  <div class="hr-yt-setted"></div>'+
-                      '  <div class="hr-yt-handle"></div>'+
-                      '</div>',
+            templateUrl: '/template/overlay/player-volume-horizontal.html',
             transclude: true,
             scope: {},
             link: function(scope, elm, attrs,youtubePlayerCtrl) {

@@ -46,10 +46,7 @@
         return {
             restrict: 'EA',
             require: ['youtubePlayer', '?ngModel'],
-            template: '<div class="hr-yt-wrapper">' +
-                      '  <div class="hr-yt-video-place-holder"></div>' +
-                      '  <div class="hr-yt-overlay" ng-transclude=""></div>' +
-                      '</div>',
+            templateUrl: '/template/youtubePlayer.html',
             scope: {
                 videoId: '='
             },
@@ -96,7 +93,6 @@
 
                 elm.css('position','relative');
                 elm.css('display','block');
-
                 // Save the overlay element in the controller so child directives can use it
                 // TODO: check this out again
                 youtubePlayerCtrl.setOverlayElement(elm);
@@ -382,7 +378,7 @@
         return {
             restrict: 'E',
             require: '^youtubePlayer',
-            template: '<div ng-transclude=""></div>',
+            templateUrl: '/template/overlay/player-panel.html',
             transclude: true,
             link: function(scope, elm, attrs,youtubePlayerCtrl) {
                 youtubePlayerCtrl.getPlayer().then(function(player){
@@ -454,7 +450,7 @@
         return {
             restrict: 'E',
             require: '^youtubePlayer',
-            template: '<div style="display: inherit" ng-transclude=""></div>',
+            templateUrl: '/template/overlay/player-pause.html',
             transclude: true,
             link: function(scope, elm, attrs,youtubePlayerCtrl) {
                 youtubePlayerCtrl.getPlayer().then(function(player){
@@ -475,7 +471,7 @@
         return {
             restrict: 'E',
             require: '^youtubePlayer',
-            template: '<div style="display: inherit" ng-transclude=""></div>',
+            templateUrl: '/template/overlay/player-play.html',
             transclude: true,
             link: function(scope, elm, attrs,youtubePlayerCtrl) {
                 youtubePlayerCtrl.getPlayer().then(function(player){
@@ -801,7 +797,7 @@
         return {
             restrict: 'E',
             require: '^youtubePlayer',
-            template: '<div style="display: inherit" ng-transclude=""></div>',
+            templateUrl: '/template/overlay/player-toggle-fullscreen.html',
             transclude: true,
             link: function(scope, elm, attrs,youtubePlayerCtrl) {
                 youtubePlayerCtrl.getPlayer().then(function(player){
@@ -839,13 +835,7 @@
         return {
             restrict: 'E',
             require: '^youtubePlayer',
-            template: '<div ng-click="toggleMute()" class="ng-transclude"></div>'+
-                      '<div class="hr-yt-volume-hr-bar"' +
-                      '     yt-slider-move="onSliderMove($percentage)"' +
-                      '     yt-slider="onSliderUp($percentage)">'+
-                      '  <div class="hr-yt-setted"></div>'+
-                      '  <div class="hr-yt-handle"></div>'+
-                      '</div>',
+            templateUrl: '/template/overlay/player-volume-horizontal.html',
             transclude: true,
             scope: {},
             link: function(scope, elm, attrs,youtubePlayerCtrl) {

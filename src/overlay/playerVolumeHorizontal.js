@@ -5,13 +5,7 @@
         return {
             restrict: 'E',
             require: '^youtubePlayer',
-            template: '<div ng-click="toggleMute()" class="ng-transclude"></div>'+
-                      '<div class="hr-yt-volume-hr-bar"' +
-                      '     yt-slider-move="onSliderMove($percentage)"' +
-                      '     yt-slider="onSliderUp($percentage)">'+
-                      '  <div class="hr-yt-setted"></div>'+
-                      '  <div class="hr-yt-handle"></div>'+
-                      '</div>',
+            templateUrl: '/template/overlay/player-volume-horizontal.html',
             transclude: true,
             scope: {},
             link: function(scope, elm, attrs,youtubePlayerCtrl) {

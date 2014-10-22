@@ -5,7 +5,7 @@
         return {
             restrict: 'E',
             require: '^youtubePlayer',
-            template: '<div ng-transclude=""></div>',
+            templateUrl: '/template/overlay/player-panel.html',
             transclude: true,
             link: function(scope, elm, attrs,youtubePlayerCtrl) {
                 youtubePlayerCtrl.getPlayer().then(function(player){
