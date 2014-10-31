@@ -27,20 +27,20 @@ angular.module('demoMarker', ['hrAngularYoutube'])
             }
         }));
 
-        player.addMarker(new YoutubeTemplateMarker(player, {
+        player.addMarker(new YoutubeTemplateMarker({
             time: 10,
             duration: 3,
             template: '<div class="example-marker">This only shows when the video passes normally</div>',
         }));
 
-        player.addMarker(new YoutubeTemplateMarker(player, {
+        player.addMarker(new YoutubeTemplateMarker({
             time: 15,
             duration: 3,
             launchOnSeek: true,
             template: '<div class="example-marker">This shows even if you seek trough</div>'
         }));
 
-        player.addMarker(new YoutubeTemplateMarker(player, {
+        player.addMarker(new YoutubeTemplateMarker({
             time: 30,
             blockFF: true,
             fireOnce: true,

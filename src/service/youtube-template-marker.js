@@ -6,11 +6,11 @@
 
     .factory('YoutubeTemplateMarker', ['$rootScope','$compile','YoutubeMarker','$q','$http','$templateCache',
                                        function($rootScope, $compile,YoutubeMarker, $q,$http,$templateCache) {
-        var YoutubeTemplateMarker = function (player, options) {
-            this._player = player;
+        var YoutubeTemplateMarker = function (options) {
             this._elm = null;
             this._scope = null;
-            this._parentElm = options.parent || player.getOverlayElement();
+            this._parentScope = options.scope || $rootScope;
+            this._parentElm = options.parent;
             this._addMethod = options.addMethod || 'append';
             this.template = null;
             this.link = this.link || null;
@@ -24,8 +24,14 @@
 
         YoutubeTemplateMarker.prototype.handler = function () {
             var self = this;
+
+            // Make sure we have somewhere to insert it
+            if (!this._parentElm) {
+                this._parentElm = this._player.getOverlayElement();
+            }
+
             // Create a new isolated scope
-            this._scope = $rootScope.$new(true);
+            this._scope = this._parentScope.$new(true);
             // Create the element from the template
             this.template.then(function(template) {
                 self._elm = $compile(template)(self._scope);

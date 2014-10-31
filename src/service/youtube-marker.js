@@ -4,7 +4,7 @@
 
     angular.module('hrAngularYoutube')
 
-    .factory('YoutubeMarker', function () {
+    .factory('YoutubeMarker',['youtubeUuid', function (youtubeUuid) {
 
 
         var YoutubeMarker = function(options) {
@@ -24,19 +24,27 @@
             // Extra css class that can be added to the marker bar
             this.barCss = '';
 
-            // TODO: Put generate hash here
             this.name = null;
 
             this._runCount = 0;
             this._isRunning = false;
 
+            this._player = null;
+
             // Override with user options
             angular.extend(this, options);
+
+            // If there is an id defined, make sure we store the string representation, if not, use a hash
+            this.id = (options.id)?options.id.toString() : youtubeUuid.getHash();
 
             // Duration implies end time
             if (this.duration !== null) {
                 this.endTime = this.time + this.duration;
             }
+        };
+
+        YoutubeMarker.prototype.setPlayer = function (player) {
+            this._player = player;
         };
 
         YoutubeMarker.prototype.shouldLaunchOnSeek = function (seekTime) {
@@ -118,11 +126,13 @@
         };
 
         YoutubeMarker.prototype.end = function () {
-            this._isRunning = false;
+            if (this.isRunning()) {
+                this._isRunning = false;
 
-            // If there is an end handler call it
-            if (typeof this.onEnd === 'function') {
-                this.onEnd();
+                // If there is an end handler call it
+                if (typeof this.onEnd === 'function') {
+                    this.onEnd();
+                }
             }
         };
 
@@ -132,7 +142,7 @@
 
         return YoutubeMarker;
 
-    });
+    }]);
 
 
 })(angular);

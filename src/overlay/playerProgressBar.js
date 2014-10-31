@@ -42,8 +42,10 @@
                         // The interval calls updateProgress with a number, so we need to add this inner fn
                         updateProgress();
                     });
-                    // When someone seeks the video update the progress
-                    player.on('seekToBegin', updateProgress);
+                    // When someone seeks the video update the progress to the intended seek time
+                    player.on('seekToBegin', function(seekTime) {
+                        updateProgress(seekTime.newTime);
+                    });
                     // Update the progress every time there state changes
                     player.on('onStateChange', updateProgress);
 
@@ -79,23 +81,29 @@
                         }
                     };
 
-
-                    // Add markers  to the bar
+                    var markerElms = {};
+                    // Add markers to the bar
                     var addMarker = function(marker) {
                         if (!marker.showMarker) {
                             return;
                         }
                         var $markerElm = angular.element('<span class="hr-yt-marker" '+
-                                                         '      marker-name="'+marker.name+'">'+
+                                                         '      marker-id="'+marker.id+'">'+
                                                          '</span>');
                         elm.append($markerElm);
                         $compile($markerElm)(scope);
+                        markerElms[marker.id] = $markerElm;
                     };
                     // Existing markers
                     angular.forEach(player.getMarkers(), addMarker);
                     // New markers
                     player.on('markerAdd', addMarker );
 
+                    player.on('markerRemove', function (marker) {
+                        if (markerElms[marker.id]) {
+                            markerElms[marker.id].remove();
+                        }
+                    });
                 });
             }
         };
@@ -165,15 +173,21 @@
 
                 youtubePlayerCtrl.getPlayer().then(function(player){
                     var duration = player.getDuration();
-                    var marker = player.getMarker(attrs.markerName);
+                    var marker = player.getMarker(attrs.markerId);
                     // If the marker has extra css, add it
                     if (marker.barCss !== '') {
                         elm.addClass(marker.barCss);
                     }
-
-                    var relativeTime = 100 * marker.time / duration;
-                    elm.css('left', relativeTime + '%');
-
+                    var setRelativeTime = function () {
+                        var relativeTime = 100 * marker.time / duration;
+                        elm.css('left', relativeTime + '%');
+                    };
+                    setRelativeTime();
+                    scope.$on('markerChangeTime', function(event, id) {
+                        if (attrs.markerId === id) {
+                            setRelativeTime();
+                        }
+                    });
                 });
             }
         };

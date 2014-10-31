@@ -139,7 +139,8 @@ module.run(['$templateCache', function($templateCache) {
         if (youtube.getAutoLoad()) {
             // Add the iframe api to the dom
             var tag = document.createElement('script');
-            tag.src = '//www.youtube.com/iframe_api';
+            tag.src = 'https://www.youtube.com/iframe_api';
+
             var firstScriptTag = document.getElementsByTagName('script')[0];
             firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
         }
@@ -651,8 +652,10 @@ module.run(['$templateCache', function($templateCache) {
                         // The interval calls updateProgress with a number, so we need to add this inner fn
                         updateProgress();
                     });
-                    // When someone seeks the video update the progress
-                    player.on('seekToBegin', updateProgress);
+                    // When someone seeks the video update the progress to the intended seek time
+                    player.on('seekToBegin', function(seekTime) {
+                        updateProgress(seekTime.newTime);
+                    });
                     // Update the progress every time there state changes
                     player.on('onStateChange', updateProgress);
 
@@ -688,23 +691,29 @@ module.run(['$templateCache', function($templateCache) {
                         }
                     };
 
-
-                    // Add markers  to the bar
+                    var markerElms = {};
+                    // Add markers to the bar
                     var addMarker = function(marker) {
                         if (!marker.showMarker) {
                             return;
                         }
                         var $markerElm = angular.element('<span class="hr-yt-marker" '+
-                                                         '      marker-name="'+marker.name+'">'+
+                                                         '      marker-id="'+marker.id+'">'+
                                                          '</span>');
                         elm.append($markerElm);
                         $compile($markerElm)(scope);
+                        markerElms[marker.id] = $markerElm;
                     };
                     // Existing markers
                     angular.forEach(player.getMarkers(), addMarker);
                     // New markers
                     player.on('markerAdd', addMarker );
 
+                    player.on('markerRemove', function (marker) {
+                        if (markerElms[marker.id]) {
+                            markerElms[marker.id].remove();
+                        }
+                    });
                 });
             }
         };
@@ -774,15 +783,21 @@ module.run(['$templateCache', function($templateCache) {
 
                 youtubePlayerCtrl.getPlayer().then(function(player){
                     var duration = player.getDuration();
-                    var marker = player.getMarker(attrs.markerName);
+                    var marker = player.getMarker(attrs.markerId);
                     // If the marker has extra css, add it
                     if (marker.barCss !== '') {
                         elm.addClass(marker.barCss);
                     }
-
-                    var relativeTime = 100 * marker.time / duration;
-                    elm.css('left', relativeTime + '%');
-
+                    var setRelativeTime = function () {
+                        var relativeTime = 100 * marker.time / duration;
+                        elm.css('left', relativeTime + '%');
+                    };
+                    setRelativeTime();
+                    scope.$on('markerChangeTime', function(event, id) {
+                        if (attrs.markerId === id) {
+                            setRelativeTime();
+                        }
+                    });
                 });
             }
         };
@@ -1121,7 +1136,7 @@ module.run(['$templateCache', function($templateCache) {
 
     angular.module('hrAngularYoutube')
 
-    .factory('YoutubeMarker', function () {
+    .factory('YoutubeMarker',['youtubeUuid', function (youtubeUuid) {
 
 
         var YoutubeMarker = function(options) {
@@ -1141,19 +1156,27 @@ module.run(['$templateCache', function($templateCache) {
             // Extra css class that can be added to the marker bar
             this.barCss = '';
 
-            // TODO: Put generate hash here
             this.name = null;
 
             this._runCount = 0;
             this._isRunning = false;
 
+            this._player = null;
+
             // Override with user options
             angular.extend(this, options);
+
+            // If there is an id defined, make sure we store the string representation, if not, use a hash
+            this.id = (options.id)?options.id.toString() : youtubeUuid.getHash();
 
             // Duration implies end time
             if (this.duration !== null) {
                 this.endTime = this.time + this.duration;
             }
+        };
+
+        YoutubeMarker.prototype.setPlayer = function (player) {
+            this._player = player;
         };
 
         YoutubeMarker.prototype.shouldLaunchOnSeek = function (seekTime) {
@@ -1235,11 +1258,13 @@ module.run(['$templateCache', function($templateCache) {
         };
 
         YoutubeMarker.prototype.end = function () {
-            this._isRunning = false;
+            if (this.isRunning()) {
+                this._isRunning = false;
 
-            // If there is an end handler call it
-            if (typeof this.onEnd === 'function') {
-                this.onEnd();
+                // If there is an end handler call it
+                if (typeof this.onEnd === 'function') {
+                    this.onEnd();
+                }
             }
         };
 
@@ -1249,7 +1274,7 @@ module.run(['$templateCache', function($templateCache) {
 
         return YoutubeMarker;
 
-    });
+    }]);
 
 
 })(angular);
@@ -1257,11 +1282,7 @@ module.run(['$templateCache', function($templateCache) {
 /* global angular, YT, screenfull */
 (function(angular) {
 
-    function generateHash() {
-        return Math.floor((1 + Math.random()) * 0x10000)
-                                   .toString(16)
-                                   .substring(1);
-    }
+
 
 
 
@@ -1299,8 +1320,8 @@ module.run(['$templateCache', function($templateCache) {
         };
 
 
-        this.$get = ['$window','$q', '$interval','$rootScope', 'youtubeReadableTime', 'youtubeQualityMap',
-                     function ($window, $q, $interval, $rootScope, youtubeReadableTime, youtubeQualityMap) {
+        this.$get = ['$window','$q', '$interval','$rootScope', 'youtubeReadableTime', 'youtubeQualityMap', 'youtubeUuid',
+                     function ($window, $q, $interval, $rootScope, youtubeReadableTime, youtubeQualityMap, youtubeUuid) {
             var apiLoaded = $q.defer();
 
             var apiLoadedPromise = apiLoaded.promise;
@@ -1334,7 +1355,7 @@ module.run(['$templateCache', function($templateCache) {
                 }
                 this.player = new YT.Player(elmOrId, op);
 
-                this.markersByName = {};
+                this.markersById = {};
                 this._muted = false;
                 this._volume = 100;
                 this._intendedQuality = 'auto';
@@ -1476,7 +1497,7 @@ module.run(['$templateCache', function($templateCache) {
                 var initialTime = this.player.getCurrentTime();
 
                 // If there is a blocking marker, don't allow to seek further than it
-                angular.forEach(self.markersByName, function(marker) {
+                angular.forEach(self.markersById, function(marker) {
                     // If its not blocking, we dont care
                     if (!marker.getBlockOnFF()) {
                         return;
@@ -1545,7 +1566,7 @@ module.run(['$templateCache', function($templateCache) {
                     return;
                 }
                 var self = this;
-                this._eventHash = generateHash();
+                this._eventHash = youtubeUuid.getHash();
                 var events = ['onStateChange', 'onPlaybackQualityChange', 'onPlaybackRateChange',
                               'onError', 'onApiChange', 'onReady'];
                 angular.forEach(events, function(name) {
@@ -1595,7 +1616,7 @@ module.run(['$templateCache', function($templateCache) {
                 this.onProgress(function() {
                     var currentTime = self.getCurrentTime();
                     var newLastTime = lastMarkerTime;
-                    angular.forEach(self.markersByName, function(marker) {
+                    angular.forEach(self.markersById, function(marker) {
                         // If the marker time has past and we haven't launched this marker yet
                         if (marker.startedIn(lastMarkerTime, currentTime) ) {
                             runMarker(marker);
@@ -1611,7 +1632,7 @@ module.run(['$templateCache', function($templateCache) {
                 });
 
                 this.on('seekToCompleted', function(seekTime){
-                    angular.forEach(self.markersByName, function(marker) {
+                    angular.forEach(self.markersById, function(marker) {
                         if (marker.isRunning()) {
                             // If the marker is running and the seek throws it out of range, stop it
                             if (!marker.inRange(seekTime.newTime)) {
@@ -1631,23 +1652,32 @@ module.run(['$templateCache', function($templateCache) {
 
             YoutubePlayer.prototype.addMarker = function (marker) {
                 this._initializeMarkerListener();
+                this.markersById[marker.id] = marker;
 
-                if (!marker.hasOwnProperty('name') || marker.name === null) {
-                    marker.name = generateHash();
-                }
+                marker.setPlayer(this);
 
-                this.markersByName[marker.name] = marker;
                 this.emit('markerAdd', marker);
+                return marker;
             };
 
-            YoutubePlayer.prototype.removeMarker = function (marker) {
-                delete this.markersByName[marker.name];
+            YoutubePlayer.prototype.removeMarker = function (markerId) {
+                var marker = this.markersById[markerId];
+                if (marker) {
+                    // If it was running, remove it
+                    marker.end();
+                    // Remove it from the list
+                    delete this.markersById[markerId];
+                    // Notify who might be interested
+                    this.emit('markerRemove', marker);
+                    return marker;
+                }
+                return null;
             };
             YoutubePlayer.prototype.getMarkers = function () {
-                return this.markersByName;
+                return this.markersById;
             };
-            YoutubePlayer.prototype.getMarker = function (name) {
-                return this.markersByName[name];
+            YoutubePlayer.prototype.getMarker = function (id) {
+                return this.markersById[id];
             };
 
 
@@ -1837,11 +1867,11 @@ module.run(['$templateCache', function($templateCache) {
 
     .factory('YoutubeTemplateMarker', ['$rootScope','$compile','YoutubeMarker','$q','$http','$templateCache',
                                        function($rootScope, $compile,YoutubeMarker, $q,$http,$templateCache) {
-        var YoutubeTemplateMarker = function (player, options) {
-            this._player = player;
+        var YoutubeTemplateMarker = function (options) {
             this._elm = null;
             this._scope = null;
-            this._parentElm = options.parent || player.getOverlayElement();
+            this._parentScope = options.scope || $rootScope;
+            this._parentElm = options.parent;
             this._addMethod = options.addMethod || 'append';
             this.template = null;
             this.link = this.link || null;
@@ -1855,8 +1885,14 @@ module.run(['$templateCache', function($templateCache) {
 
         YoutubeTemplateMarker.prototype.handler = function () {
             var self = this;
+
+            // Make sure we have somewhere to insert it
+            if (!this._parentElm) {
+                this._parentElm = this._player.getOverlayElement();
+            }
+
             // Create a new isolated scope
-            this._scope = $rootScope.$new(true);
+            this._scope = this._parentScope.$new(true);
             // Create the element from the template
             this.template.then(function(template) {
                 self._elm = $compile(template)(self._scope);
@@ -1900,6 +1936,26 @@ module.run(['$templateCache', function($templateCache) {
 
         return YoutubeTemplateMarker;
     }]);
+
+
+})(angular);
+
+/* global angular */
+(function(angular) {
+
+
+    angular.module('hrAngularYoutube')
+
+    .factory('youtubeUuid', function () {
+
+        return {
+            getHash : function () {
+                return Math.floor((1 + Math.random()) * 0x10000)
+                                   .toString(16)
+                                   .substring(1);
+            }
+        };
+    });
 
 
 })(angular);
