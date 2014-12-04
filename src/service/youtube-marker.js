@@ -6,45 +6,47 @@
 
     .factory('YoutubeMarker',['youtubeUuid', function (youtubeUuid) {
 
-
+        /*jshint maxcomplexity:false */
         var YoutubeMarker = function(options) {
             // Set default values
-            this.time = null;
-            this.endTime = null;
-            this.duration = null;
-            this.handler = this.handler || null;
+            this.startTime = options.startTime || null;
+            this.endTime =  options.endTime || null;
+            this.duration = options.duration || null;
+            this.handler = options.handler || this.handler || null;
             // Whether this marker should be launched every time the marker pass or just the first time (assuming seeks)
-            this.fireOnce = false;
+            this.fireOnce = options.fireOnce || false;
             // Launch the marker when the user seeks past the marker time
-            this.launchOnSeek = false;
+            this.launchOnSeek = options.launchOnSeek || false;
             // Block when user fast forwards past the marker
-            this.blockFF = false;
+            this.blockFF = options.blockFF || false;
             //Wether to show the marker in a status bar
-            this.showMarker = true;
+            this.showMarker = typeof options.showMarker !== 'undefined'?options.showMarker : true;
             // Extra css class that can be added to the marker bar
-            this.barCss = '';
+            this.barCss = typeof options.barCss !== 'undefined'?options.barCss:'';
 
-            this.name = null;
+//            this.name =  null;
 
             this._runCount = 0;
             this._isRunning = false;
 
-            this._player = null;
+            this.player = null;
 
             // Override with user options
-            angular.extend(this, options);
-
-            // If there is an id defined, make sure we store the string representation, if not, use a hash
-            this.id = (options.id)?options.id.toString() : youtubeUuid.getHash();
+//            angular.extend(this, options);
+            this.id = this.id || options.id || youtubeUuid.getHash();
 
             // Duration implies end time
             if (this.duration !== null) {
-                this.endTime = this.time + this.duration;
+                this.endTime = this.startTime + this.duration;
             }
         };
 
         YoutubeMarker.prototype.setPlayer = function (player) {
-            this._player = player;
+            this.player = player;
+        };
+
+        YoutubeMarker.prototype.getPlayer = function () {
+            return this.player;
         };
 
         YoutubeMarker.prototype.shouldLaunchOnSeek = function (seekTime) {
@@ -52,7 +54,7 @@
                 if (this.hasEndTime()) {
                     return this.inRange(seekTime.newTime);
                 } else {
-                    return this.time >= seekTime.oldTime && this.time <= seekTime.newTime;
+                    return this.startTime >= seekTime.oldTime && this.startTime <= seekTime.newTime;
                 }
             }
         };
@@ -83,7 +85,7 @@
             if (!this.hasEndTime()) {
                 return false;
             }
-            return t >= this.time && t < this.endTime;
+            return t >= this.startTime && t < this.endTime;
         };
 
         YoutubeMarker.prototype.startedIn = function (begin, end) {
@@ -92,7 +94,7 @@
 //                return false;
 //            }
 
-            return this.time > begin && this.time <= end;
+            return this.startTime > begin && this.startTime <= end;
         };
 
 

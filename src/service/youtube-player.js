@@ -39,8 +39,9 @@
         };
 
 
-        this.$get = ['$window','$q', '$interval','$rootScope', 'youtubeReadableTime', 'youtubeQualityMap', 'youtubeUuid',
-                     function ($window, $q, $interval, $rootScope, youtubeReadableTime, youtubeQualityMap, youtubeUuid) {
+        this.$get = ['$window','$q', '$interval','$rootScope', 'youtubeReadableTime', 'youtubeQualityMap',
+                     'youtubeUuid','YoutubeMarkerList',
+                     function ($window, $q, $interval, $rootScope, youtubeReadableTime, youtubeQualityMap, youtubeUuid, YoutubeMarkerList) {
             var apiLoaded = $q.defer();
 
             var apiLoadedPromise = apiLoaded.promise;
@@ -74,7 +75,7 @@
                 }
                 this.player = new YT.Player(elmOrId, op);
 
-                this.markersById = {};
+                this.markerList = new YoutubeMarkerList();
                 this._muted = false;
                 this._volume = 100;
                 this._intendedQuality = 'auto';
@@ -85,7 +86,17 @@
                         self._setMuted(self.player.isMuted());
                     }
                 });
-                // TODO: Maybe add a markersByTime for performance
+                // If a marker is added, make sure the marker listener is initialized
+                this.on('markerAdd', function(marker) {
+                    self._initializeMarkerListener();
+                    marker.setPlayer(self);
+                });
+
+                // If a marker is removed make sure its stoped
+                this.on('markerRemove', function(marker) {
+                    marker.end();
+                });
+
             };
 
             // TODO: Inherit better than these :S once i know if this is the way I want to access the object
@@ -216,7 +227,7 @@
                 var initialTime = this.player.getCurrentTime();
 
                 // If there is a blocking marker, don't allow to seek further than it
-                angular.forEach(self.markersById, function(marker) {
+                angular.forEach(self.markerList.getMarkers(), function(marker) {
                     // If its not blocking, we dont care
                     if (!marker.getBlockOnFF()) {
                         return;
@@ -224,7 +235,7 @@
 
                     // If the marker is in the seek time, force the sec to be at the marker time
                     if (marker.startedIn(initialTime, sec)) {
-                        sec = marker.time;
+                        sec = marker.startTime;
                     }
                 });
 
@@ -233,6 +244,7 @@
                 // Inform of the intent to seek
                 self.emit('seekToBegin', {newTime: sec, oldTime: initialTime});
 
+                var seekPromise = $q.defer();
                 // Check on a time interval that the seek has been completed
                 var promise = $interval(function() {
                     var currentTime = self.player.getCurrentTime();
@@ -257,11 +269,13 @@
 
                     // Once its complete, for whatever reason, fire the event and cancel this interval
                     if (seekCompleted) {
-                        self.emit('seekToCompleted', {newTime: sec, oldTime: initialTime});
                         $interval.cancel(promise);
+                        var ans = {newTime: sec, oldTime: initialTime};
+                        self.emit('seekToCompleted', ans);
+                        seekPromise.resolve(ans);
                     }
                 }, 50);
-
+                return seekPromise.promise;
             };
 
             YoutubePlayer.prototype.startLoading = function (sec) {
@@ -335,11 +349,11 @@
                 this.onProgress(function() {
                     var currentTime = self.getCurrentTime();
                     var newLastTime = lastMarkerTime;
-                    angular.forEach(self.markersById, function(marker) {
+                    angular.forEach(self.markerList.getMarkers(), function(marker) {
                         // If the marker time has past and we haven't launched this marker yet
                         if (marker.startedIn(lastMarkerTime, currentTime) ) {
                             runMarker(marker);
-                            newLastTime = Math.max(newLastTime, marker.time);
+                            newLastTime = Math.max(newLastTime, marker.startTime);
                         }
                         // If the marker has ended
                         if (marker.endedIn(lastMarkerTime, currentTime) && marker.isRunning()) {
@@ -351,7 +365,7 @@
                 });
 
                 this.on('seekToCompleted', function(seekTime){
-                    angular.forEach(self.markersById, function(marker) {
+                    angular.forEach(self.markerList.getMarkers(), function(marker) {
                         if (marker.isRunning()) {
                             // If the marker is running and the seek throws it out of range, stop it
                             if (!marker.inRange(seekTime.newTime)) {
@@ -369,34 +383,27 @@
                 });
             };
 
-            YoutubePlayer.prototype.addMarker = function (marker) {
+
+            YoutubePlayer.prototype.setMarkerList = function (list) {
                 this._initializeMarkerListener();
-                this.markersById[marker.id] = marker;
+                this.markerList = list;
+                this.markerList.setPlayer(this);
+                this.emit('markerListChanged');
+            };
 
-                marker.setPlayer(this);
-
-                this.emit('markerAdd', marker);
-                return marker;
+            YoutubePlayer.prototype.addMarker = function (marker) {
+                return this.markerList.add(marker);
             };
 
             YoutubePlayer.prototype.removeMarker = function (markerId) {
-                var marker = this.markersById[markerId];
-                if (marker) {
-                    // If it was running, remove it
-                    marker.end();
-                    // Remove it from the list
-                    delete this.markersById[markerId];
-                    // Notify who might be interested
-                    this.emit('markerRemove', marker);
-                    return marker;
-                }
-                return null;
+                return this.markerList.removeById(markerId);
             };
+
             YoutubePlayer.prototype.getMarkers = function () {
-                return this.markersById;
+                return this.markerList.getMarkers();
             };
             YoutubePlayer.prototype.getMarker = function (id) {
-                return this.markersById[id];
+                return this.markerList.getMarker(id);
             };
 
 

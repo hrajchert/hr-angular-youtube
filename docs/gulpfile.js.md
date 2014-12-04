@@ -1,13 +1,9 @@
+Replace with `gulp-angular-templatecache`
 
-**Warning:**
-Docs clean is currently removing git files, resolve that later
-{:.alert .alert-danger }
-
-{%code_warning
+{%code_todo
     "src" : "gulpfile.js",
     "priority" : 1,
     "ref" : {
-        "text" : "gulp.task('docs'"
+        "text" : "pipe(html2js"
     }
 %}
-

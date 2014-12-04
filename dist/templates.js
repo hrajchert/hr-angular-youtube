@@ -84,6 +84,8 @@ module.run(['$templateCache', function($templateCache) {
     '        <div class="hr-yt-loaded"></div>\n' +
     '        <div class="hr-yt-handle"></div>\n' +
     '</div>\n' +
+    '<span ng-repeat="marker in markers" class="hr-yt-marker" ng-if="marker.showMarker" marker="marker">\n' +
+    '    </span>\n' +
     '');
 }]);
 })();

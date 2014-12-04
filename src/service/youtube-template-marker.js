@@ -7,20 +7,35 @@
     .factory('YoutubeTemplateMarker', ['$rootScope','$compile','YoutubeMarker','$q','$http','$templateCache',
                                        function($rootScope, $compile,YoutubeMarker, $q,$http,$templateCache) {
         var YoutubeTemplateMarker = function (options) {
+            YoutubeMarker.call(this, options);
+
             this._elm = null;
             this._scope = null;
             this._parentScope = options.scope || $rootScope;
             this._parentElm = options.parent;
             this._addMethod = options.addMethod || 'append';
-            this.template = null;
-            this.link = this.link || null;
+            this.template = options.template || null;
+            this.link = options.link || this.link || null;
 
-            YoutubeMarker.call(this, options);
 
             this._loadTemplate(options);
         };
 
         angular.extend(YoutubeTemplateMarker.prototype, YoutubeMarker.prototype);
+
+       YoutubeTemplateMarker.prototype.setParent = function (parent) {
+           this._parentElm = parent;
+       };
+       YoutubeTemplateMarker.prototype.getParent = function () {
+           return this._parentElm;
+       };
+
+       YoutubeTemplateMarker.prototype.setParentScope = function (scope) {
+           this._parentScope = scope;
+       };
+       YoutubeTemplateMarker.prototype.getParentScope = function () {
+           return this._parentScope;
+       };
 
         YoutubeTemplateMarker.prototype.handler = function () {
             var self = this;
@@ -44,7 +59,7 @@
 
                 // Call the link function to allow logic in the scope
                 if (typeof self.link === 'function') {
-                    self.link(self._player, self._scope);
+                    self.link(self._scope);
                 }
             });
         };

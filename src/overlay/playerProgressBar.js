@@ -1,13 +1,19 @@
 /* global angular, YT */
 (function(angular) {
     angular.module('hrAngularYoutube')
-    .directive('playerProgressBar', ['$compile', function($compile) {
+    .directive('playerProgressBar', [function() {
         return {
             restrict: 'E',
-            require: '^youtubePlayer',
+            require: ['^youtubePlayer'],
             templateUrl: '/template/overlay/player-progress-bar.html',
-            scope: {},
-            link: function(scope, elm, attrs, youtubePlayerCtrl) {
+
+            scope: {
+
+            },
+            link: function(scope, elm, attrs, ctrls) {
+                var youtubePlayerCtrl = ctrls[0];
+
+
                 youtubePlayerCtrl.getPlayer().then(function(player){
 
                     var duration = player.getDuration();
@@ -81,29 +87,11 @@
                         }
                     };
 
-                    var markerElms = {};
-                    // Add markers to the bar
-                    var addMarker = function(marker) {
-                        if (!marker.showMarker) {
-                            return;
-                        }
-                        var $markerElm = angular.element('<span class="hr-yt-marker" '+
-                                                         '      marker-id="'+marker.id+'">'+
-                                                         '</span>');
-                        elm.append($markerElm);
-                        $compile($markerElm)(scope);
-                        markerElms[marker.id] = $markerElm;
-                    };
-                    // Existing markers
-                    angular.forEach(player.getMarkers(), addMarker);
-                    // New markers
-                    player.on('markerAdd', addMarker );
-
-                    player.on('markerRemove', function (marker) {
-                        if (markerElms[marker.id]) {
-                            markerElms[marker.id].remove();
-                        }
+                    scope.markers = player.getMarkers();
+                    player.on('markerListChanged', function () {
+                        scope.markers = player.getMarkers();
                     });
+
                 });
             }
         };
@@ -169,25 +157,37 @@
         return {
             restrict: 'C',
             require: '^youtubePlayer',
+            scope: {
+                marker: '='
+            },
             link: function(scope, elm, attrs,youtubePlayerCtrl) {
 
                 youtubePlayerCtrl.getPlayer().then(function(player){
                     var duration = player.getDuration();
-                    var marker = player.getMarker(attrs.markerId);
+                    var marker = scope.marker;
                     // If the marker has extra css, add it
                     if (marker.barCss !== '') {
                         elm.addClass(marker.barCss);
                     }
                     var setRelativeTime = function () {
-                        var relativeTime = 100 * marker.time / duration;
+                        var relativeTime = 100 * marker.startTime / duration;
                         elm.css('left', relativeTime + '%');
                     };
                     setRelativeTime();
-                    scope.$on('markerChangeTime', function(event, id) {
-                        if (attrs.markerId === id) {
-                            setRelativeTime();
-                        }
-                    });
+                    if (marker.hasOwnProperty('mutable') && marker.mutable) {
+                        scope.$watch(
+                            function() {
+                                return marker.startTime;
+                            },
+                            function(newTime, oldTime) {
+                                if (newTime === oldTime) {
+                                    return;
+                                }
+                                setRelativeTime();
+                            }
+                        );
+                    }
+
                 });
             }
         };
