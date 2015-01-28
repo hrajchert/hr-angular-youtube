@@ -8,17 +8,19 @@ module.exports = function(mddoc) {
 
     mddoc.addGenerator('mddoc-angular-generator', {
         'title' : 'hr-angular-youtube',
-        'modules' : ['demo'],
+        'modules' : ['demo','treeControl'],
 //        'modules' : ['demo','demoOverlay', 'demoControls'],
 
-        'scripts' : [
+        'inject-scripts' : [
             'dist/hr-angular-youtube-tpl.js',
+            'dist/hrAngularExtend.js',
             'demo/controls/controls.js',
+            'demo/fullscreen/fullscreen.js',
             'demo/overlay/overlay.js',
             'demo/marker/marker.js',
             'demo/assets/screenfull.min.js'
         ],
-        'styles'  : [
+        'inject-styles'  : [
             'dist/hr-angular-youtube.css',
             'demo/overlay/overlay.css',
             'demo/marker/marker.css',
@@ -42,6 +44,11 @@ module.exports = function(mddoc) {
                         'link' : '/demo/controls'
                     },
                     {
+                        'name' : 'Fullscreen',
+                        'link' : '/demo/fullscreen'
+                    },
+
+                    {
                         'name' : 'Overlay',
                         'link' : '/demo/overlay'
                     },
@@ -50,11 +57,22 @@ module.exports = function(mddoc) {
                         'link' : '/demo/marker'
                     }
                 ]
+            },
+            {
+                'name' : 'Developer',
+                'link' : '/dev',
+                'menu' : [
+                    {
+                        'name' : 'Code view',
+                        'link' : '/dev/code'
+                    }
+                ]
             }
         ]
     });
 
     mddoc.addGenerator('mddoc-code-browser-generator', {
+        'exclude' : ['node_modules', '.git', '.DS_Store']
     });
 
 };

@@ -11,7 +11,7 @@
     }
 
     // Do not touch the next comment, is used by gulp to inject template as dependency if needed
-    angular.module('hrAngularYoutube', [/*--MODULE-DEPENDENCIES--*/])
+    angular.module('hrAngularYoutube', ['hrAngularExtend'/*--TEMPLATE-DEPENDENCIES--*/])
 
     .run(['youtube', function (youtube) {
         if (youtube.getAutoLoad()) {
@@ -52,7 +52,7 @@
                 videoId: '='
             },
             transclude: true,
-            controller: ['$scope','$q', function($scope, $q) {
+            controller: ['$q', function($q) {
                 var player = $q.defer();
 
                 this.setPlayer = function (p) {
@@ -99,24 +99,26 @@
                 youtubePlayerCtrl.setOverlayElement(elm);
 
                 var $videoDiv = elm[0].querySelector('.hr-yt-video-place-holder');
-                var $outerDiv = angular.element(elm[0].querySelector('.hr-yt-wrapper'));
+//                var $outerDiv = angular.element(elm[0].querySelector('.hr-yt-wrapper'));
                 var $overlayElm = angular.element(elm[0].querySelector('.hr-yt-overlay'));
 
                 var options = {
                     playerVars: {}
                 };
 
-                playerAttrs.forEach(function(a) {
-                    if (typeof attrs[a] !== 'undefined') {
-                        options[a] = attrs[a];
+                playerAttrs.forEach(function(name) {
+                    if (attrs.hasOwnProperty(name)) {
+                        options[name] = attrs[name];
                     }
                 });
-                playerVarAttrs.forEach(function(a) {
-                    if (typeof attrs[a] !== 'undefined') {
-                        options.playerVars[a] = attrs[a];
+                playerVarAttrs.forEach(function(name) {
+                    if (attrs.hasOwnProperty(name)) {
+                        options.playerVars[name] = attrs[name];
                     }
+                });
 
-                });
+                // See if there is a specific player
+                var playerFactoryName = attrs.playerFactory || 'YoutubePlayer';
 
                 var instanceCreated = false;
                 var createVideo = function() {
@@ -129,10 +131,11 @@
                     elm.css('height',convertToUnits(options.height));
                     elm.css('width',convertToUnits(options.width));
 
-                    youtube.loadPlayer($videoDiv, options).then(function(player) {
+
+                    youtube.loadPlayer(playerFactoryName, $videoDiv, options).then(function(player) {
                         youtubePlayerCtrl.setPlayer(player);
 
-                        player.setFullScreenElement($outerDiv[0]);
+//                        player.setFullScreenElement($outerDiv[0]);
                         player.setOverlayElement($overlayElm);
 
                         if (typeof ngModelCtrl !== 'undefined') {
@@ -216,6 +219,99 @@
 
 
 })(angular);
+
+/* global angular, screenfull */
+(function(angular) {
+    angular.module('hrAngularYoutube')
+    .directive('ytFullscreen',['$parse', function($parse) {
+        return {
+            restrict: 'A',
+            require: 'ytFullscreen',
+            controller: ['$scope', function($scope) {
+                var _elm;
+                var self = this;
+                this.setFullScreenElement = function (elm) {
+                    _elm = elm;
+                };
+
+                this.onFullscreenChange = function (handler) {
+                    return $scope.$on('fullscreenchange', handler);
+                };
+
+
+
+                this.requestFullscreen = function () {
+                    if (this.fullscreenEnabled()) {
+                        screenfull.request(_elm);
+                        $scope.$emit('fullscreenEnabled');
+                        return true;
+                    }
+                    return false;
+                };
+
+                this.removeFullscreen = function () {
+                    if (this.fullscreenEnabled()) {
+                        if (this.isFullscreen()) {
+                            this.toggleFullscreen();
+                        }
+                    }
+                };
+
+                this.toggleFullscreen = function () {
+                    if (this.fullscreenEnabled()) {
+                        var isFullscreen = screenfull.isFullscreen;
+                        screenfull.toggle(_elm);
+                        if (isFullscreen) {
+                            $scope.$emit('fullscreenDisabled');
+                        } else {
+                            $scope.$emit('fullscreenEnabled');
+                        }
+                        return true;
+                    }
+                    return false;
+                };
+
+                this.isFullscreen = function () {
+                    if (this.fullscreenEnabled()) {
+                        return screenfull.isFullscreen;
+                    }
+                    return false;
+                };
+
+
+                this.fullscreenEnabled = function () {
+                    if (typeof screenfull !== 'undefined') {
+                        return screenfull.enabled;
+                    }
+                    return false;
+                };
+
+                if (this.fullscreenEnabled()) {
+                    document.addEventListener(screenfull.raw.fullscreenchange, function() {
+                        if (self.isFullscreen()) {
+                            angular.element(self._fullScreenElem).addClass('fullscreen');
+                        } else {
+                            angular.element(self._fullScreenElem).removeClass('fullscreen');
+                        }
+                        $scope.$emit('fullscreenchange');
+                    });
+
+                }
+
+            }],
+            link: function(scope, elm, attrs, ctrl) {
+                // If the directive has a value, add the controller to the scope under that name
+                if (attrs.ytFullscreen && attrs.ytFullscreen !== '') {
+                    var p = $parse(attrs.ytFullscreen);
+                        p.assign(scope, ctrl);
+                }
+                ctrl.setFullScreenElement(elm[0]);
+            }
+
+        };
+    }]);
+})(angular);
+
 
 /* global angular */
 (function(angular) {
@@ -811,14 +907,12 @@
     .directive('playerToggleFullscreen',  function() {
         return {
             restrict: 'E',
-            require: '^youtubePlayer',
+            require: '^ytFullscreen',
             templateUrl: '/template/overlay/player-toggle-fullscreen.html',
             transclude: true,
-            link: function(scope, elm, attrs,youtubePlayerCtrl) {
-                youtubePlayerCtrl.getPlayer().then(function(player){
-                    elm.on('click', function() {
-                        player.toggleFullscreen();
-                    });
+            link: function(scope, elm, attrs,fullScreenCtrl) {
+                elm.on('click', function() {
+                    fullScreenCtrl.toggleFullscreen();
                 });
             }
         };
@@ -935,43 +1029,38 @@
     .directive('showIfFullscreenEnabled', ['$animate', function($animate) {
         return {
             restrict: 'A',
-            require: '^youtubePlayer',
-            link: function(scope, elm, attrs,youtubePlayerCtrl) {
-                // By default hide
-                $animate.addClass(elm, 'ng-hide');
-                youtubePlayerCtrl.getPlayer().then(function(player){
-                    if (player.fullscreenEnabled()) {
-                        $animate.removeClass(elm, 'ng-hide');
-                    } else {
-                        $animate.addClass(elm, 'ng-hide');
-                    }
-                });
+            require: '^ytFullscreen',
+            link: function(scope, elm, attrs,fullScreenCtrl) {
+                if (fullScreenCtrl.fullscreenEnabled()) {
+                    $animate.removeClass(elm, 'ng-hide');
+                } else {
+                    $animate.addClass(elm, 'ng-hide');
+                }
             }
         };
     }])
     .directive('showIfFullscreen', ['$animate', function($animate) {
         return {
             restrict: 'A',
-            require: '^youtubePlayer',
-            link: function(scope, elm, attrs,youtubePlayerCtrl) {
+            require: '^ytFullscreen',
+            link: function(scope, elm, attrs,fullScreenCtrl) {
                 // By default hide
-                $animate.addClass(elm, 'ng-hide');
-                youtubePlayerCtrl.getPlayer().then(function(player){
-                    var hideOrShow = function () {
-                        var show = player.isFullscreen();
-                        if (attrs.showIfFullscreen === 'true') {
-                            show = !show;
-                        }
+//                $animate.addClass(elm, 'ng-hide');
+                var hideOrShow = function () {
+                    var show = fullScreenCtrl.isFullscreen();
+                    if (attrs.showIfFullscreen === 'true') {
+                        show = !show;
+                    }
 
-                        if ( show ) {
-                            $animate.removeClass(elm, 'ng-hide');
-                        } else {
-                            $animate.addClass(elm, 'ng-hide');
-                        }
-                    };
-                    hideOrShow();
-                    player.on('fullscreenchange', hideOrShow);
-                });
+                    if ( show ) {
+                        $animate.removeClass(elm, 'ng-hide');
+                    } else {
+                        $animate.addClass(elm, 'ng-hide');
+                    }
+                };
+                hideOrShow();
+                fullScreenCtrl.onFullscreenChange(hideOrShow);
+//                    player.on('fullscreenchange', hideOrShow);
             }
         };
     }])
@@ -1205,62 +1294,97 @@
 
 })(angular);
 
-/* global angular, YT, screenfull */
+/*  angular, screenfull */
+/*
 (function(angular) {
-
-
-
-
-
 
     angular.module('hrAngularYoutube')
 
-    .provider('youtube', function youtubeProvider () {
+    .factory('YoutubePlayerFullscreenMixin',[function () {
+        function YoutubePlayerFullscreenMixin () {
+            var self = this;
+            if (this.fullscreenEnabled()) {
+                document.addEventListener(screenfull.raw.fullscreenchange, function() {
+                    if (self.isFullscreen()) {
+                        angular.element(self._fullScreenElem).addClass('fullscreen');
+                    } else {
+                        angular.element(self._fullScreenElem).removeClass('fullscreen');
+                    }
+                    self.emit('fullscreenchange');
+                });
+            }
+        }
 
-        var defaultOptions = {
-            playerVars: {
-                origin: location.origin + '/',
-                enablejsapi: 1
+        // TODO: See how to add a default, or if to make a full-screen directive
+        YoutubePlayerFullscreenMixin.prototype.setFullScreenElement = function (elm) {
+            this._fullScreenElem = elm;
+        };
+
+        YoutubePlayerFullscreenMixin.prototype.requestFullscreen = function () {
+            if (this.fullscreenEnabled()) {
+                screenfull.request(this._fullScreenElem);
+                this.emit('fullscreenEnabled');
+                return true;
+            }
+            return false;
+        };
+
+        YoutubePlayerFullscreenMixin.prototype.removeFullscreen = function () {
+            if (this.fullscreenEnabled()) {
+                if (this.isFullscreen()) {
+                    this.toggleFullscreen();
+                }
             }
         };
 
-        var autoload = true;
-        this.setAutoLoad = function (auto) {
-            autoload = auto;
+        YoutubePlayerFullscreenMixin.prototype.toggleFullscreen = function () {
+            if (this.fullscreenEnabled()) {
+                var isFullscreen = screenfull.isFullscreen;
+                screenfull.toggle(this._fullScreenElem);
+                if (isFullscreen) {
+                    this.emit('fullscreenDisabled');
+                } else {
+                    this.emit('fullscreenEnabled');
+                }
+                return true;
+            }
+            return false;
         };
 
-        this.setOptions = function (options) {
-            defaultOptions = options;
-        };
-
-        this.getOptions = function () {
-            return defaultOptions;
-        };
-
-        this.setOption = function (name, value) {
-            defaultOptions[name] = value;
-        };
-
-        this.setPlayerVarOption = function (name, value) {
-            defaultOptions.playerVars[name] = value;
+        YoutubePlayerFullscreenMixin.prototype.isFullscreen = function () {
+            if (this.fullscreenEnabled()) {
+                return screenfull.isFullscreen;
+            }
+            return false;
         };
 
 
-        this.$get = ['$window','$q', '$interval','$rootScope', 'youtubeReadableTime', 'youtubeQualityMap',
-                     'youtubeUuid','YoutubeMarkerList',
-                     function ($window, $q, $interval, $rootScope, youtubeReadableTime, youtubeQualityMap, youtubeUuid, YoutubeMarkerList) {
-            var apiLoaded = $q.defer();
+        YoutubePlayerFullscreenMixin.prototype.fullscreenEnabled = function () {
+            if (typeof screenfull !== 'undefined') {
+                return screenfull.enabled;
+            }
+            return false;
+        };
+        return YoutubePlayerFullscreenMixin;
+    }]);
 
-            var apiLoadedPromise = apiLoaded.promise;
 
-            var YoutubePlayer = function(elmOrId, playerOptions) {
-                var options = {};
-                // Override main options
-                angular.extend(options, angular.copy(defaultOptions), playerOptions);
-                // Override player var options
-                options.playerVars = {}; // For some reason if I dont reset this angular.extend doesnt work as expected
-                angular.extend(options.playerVars, angular.copy(defaultOptions.playerVars), playerOptions.playerVars);
+})(angular);
+*/
 
+/* global angular, YT  */
+(function(angular) {
+    'use strict';
+
+    angular.module('hrAngularYoutube')
+
+    .factory('YoutubePlayer', ['$q', '$interval','$rootScope', 'youtubeReadableTime',
+             'youtubeQualityMap', 'youtubeUuid','YoutubeMarkerList','hrAngularExtend',
+        function ($q, $interval, $rootScope, youtubeReadableTime, youtubeQualityMap,
+                  youtubeUuid, YoutubeMarkerList, hrAngularExtend) {
+
+
+            var YoutubePlayer = function(elmOrId, options) {
 
                 this.options = options;
 
@@ -1270,16 +1394,7 @@
                 op.height = '100%';
 
                 var self = this;
-                if (this.fullscreenEnabled()) {
-                    document.addEventListener(screenfull.raw.fullscreenchange, function() {
-                        if (self.isFullscreen()) {
-                            angular.element(self._fullScreenElem).addClass('fullscreen');
-                        } else {
-                            angular.element(self._fullScreenElem).removeClass('fullscreen');
-                        }
-                        self.emit('fullscreenchange');
-                    });
-                }
+
                 this.player = new YT.Player(elmOrId, op);
 
                 this.markerList = new YoutubeMarkerList();
@@ -1306,6 +1421,8 @@
 
             };
 
+            hrAngularExtend.factory(YoutubePlayer);
+
             // TODO: Inherit better than these :S once i know if this is the way I want to access the object
             angular.forEach([
                 'loadVideoById', 'loadVideoByUrl', 'cueVideoById', 'cueVideoByUrl', 'cuePlaylist',
@@ -1330,11 +1447,6 @@
                 return this._element;
             };
 
-
-            // TODO: See how to add a default, or if to make a full-screen directive
-            YoutubePlayer.prototype.setFullScreenElement = function (elm) {
-                this._fullScreenElem = elm;
-            };
 
             YoutubePlayer.prototype.getHumanReadableDuration = function () {
                 return youtubeReadableTime(this.getDuration());
@@ -1380,50 +1492,6 @@
                 return cancel;
             };
 
-            YoutubePlayer.prototype.requestFullscreen = function () {
-                if (this.fullscreenEnabled()) {
-                    screenfull.request(this._fullScreenElem);
-                    this.emit('fullscreenEnabled');
-                    return true;
-                }
-                return false;
-            };
-
-            YoutubePlayer.prototype.removeFullscreen = function () {
-                if (this.fullscreenEnabled()) {
-                    if (this.isFullscreen()) {
-                        this.toggleFullscreen();
-                    }
-                }
-            };
-            YoutubePlayer.prototype.toggleFullscreen = function () {
-                if (this.fullscreenEnabled()) {
-                    var isFullscreen = screenfull.isFullscreen;
-                    screenfull.toggle(this._fullScreenElem);
-                    if (isFullscreen) {
-                        this.emit('fullscreenDisabled');
-                    } else {
-                        this.emit('fullscreenEnabled');
-                    }
-                    return true;
-                }
-                return false;
-            };
-
-            YoutubePlayer.prototype.isFullscreen = function () {
-                if (this.fullscreenEnabled()) {
-                    return screenfull.isFullscreen;
-                }
-                return false;
-            };
-
-
-            YoutubePlayer.prototype.fullscreenEnabled = function () {
-                if (typeof screenfull !== 'undefined') {
-                    return screenfull.enabled;
-                }
-                return false;
-            };
 
 
             /**
@@ -1683,32 +1751,10 @@
                 this.player.setPlaybackQuality(q);
             };
 
-            // Youtube callback when API is ready
-            $window.onYouTubeIframeAPIReady = function () {
-                apiLoaded.resolve();
-            };
 
-
-            return {
-                loadPlayer: function (elmOrId, options) {
-                    return apiLoadedPromise.then(function(){
-                        var videoReady = $q.defer();
-                        var player = new YoutubePlayer(elmOrId, options);
-                        player.on('onReady', function() {
-                            videoReady.resolve(player);
-                        });
-                        return videoReady.promise;
-                    });
-
-                },
-                getAutoLoad: function () {
-                    return autoload;
-                }
-
-            };
-        }];
-
-    });
+            return YoutubePlayer;
+        }
+    ]);
 
 
 })(angular);
@@ -1903,6 +1949,88 @@
                                    .substring(1);
             }
         };
+    });
+
+
+})(angular);
+
+/* global angular */
+(function(angular) {
+    'use strict';
+
+    angular.module('hrAngularYoutube')
+
+    .provider('youtube', function () {
+        var defaultOptions = {
+            playerVars: {
+                origin: location.origin + '/',
+                enablejsapi: 1
+            }
+        };
+
+        var autoload = true;
+        this.setAutoLoad = function (auto) {
+            autoload = auto;
+        };
+
+        this.setOptions = function (options) {
+            defaultOptions = options;
+        };
+
+        this.getOptions = function () {
+            return defaultOptions;
+        };
+
+        this.setOption = function (name, value) {
+            defaultOptions[name] = value;
+        };
+
+        this.setPlayerVarOption = function (name, value) {
+            defaultOptions.playerVars[name] = value;
+        };
+
+        this.$get = ['$window','$q', '$injector', function ($window, $q, $injector) {
+
+            var apiLoaded = $q.defer();
+
+            var apiLoadedPromise = apiLoaded.promise;
+
+
+            // Youtube callback when API is ready
+            $window.onYouTubeIframeAPIReady = function () {
+                apiLoaded.resolve();
+            };
+
+
+            return {
+                loadPlayer: function (playerFactoryName,elmOrId, options) {
+
+                    return apiLoadedPromise.then(function(){
+                        var YoutubePlayer = $injector.get(playerFactoryName);
+
+                        var videoReady = $q.defer();
+                        var newOptions = {};
+                        // Override main options
+                        angular.extend(newOptions, angular.copy(defaultOptions), options);
+                        // Override player var options
+                        newOptions.playerVars = {}; // For some reason if I dont reset this angular.extend doesnt work as expected
+                        angular.extend(newOptions.playerVars, angular.copy(defaultOptions.playerVars), options.playerVars);
+
+                        var player = new YoutubePlayer(elmOrId, newOptions);
+                        player.on('onReady', function() {
+                            videoReady.resolve(player);
+                        });
+                        return videoReady.promise;
+                    });
+
+                },
+                getAutoLoad: function () {
+                    return autoload;
+                }
+
+            };
+        }];
+
     });
 
 

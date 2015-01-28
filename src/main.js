@@ -11,7 +11,7 @@
     }
 
     // Do not touch the next comment, is used by gulp to inject template as dependency if needed
-    angular.module('hrAngularYoutube', [/*--MODULE-DEPENDENCIES--*/])
+    angular.module('hrAngularYoutube', ['hrAngularExtend'/*--TEMPLATE-DEPENDENCIES--*/])
 
     .run(['youtube', function (youtube) {
         if (youtube.getAutoLoad()) {

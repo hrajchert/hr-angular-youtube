@@ -36,7 +36,7 @@ gulp.task('process-scripts-with-tpl',['process-templates','process-scripts'], fu
     //
     return gulp.src(['./dist/templates.js','./dist/hr-angular-youtube.js'])
         .pipe(concat('hr-angular-youtube-tpl.js'))
-        .pipe(replace('/*--MODULE-DEPENDENCIES--*/','\'hrAngularYoutubeTpls\''))
+        .pipe(replace('/*--TEMPLATE-DEPENDENCIES--*/',',\'hrAngularYoutubeTpls\''))
         .pipe(gulp.dest('./dist/'))
         .pipe(uglify())
         .pipe(rename({suffix: '.min'}))
@@ -61,7 +61,7 @@ gulp.task('demo-cp', function() {
 });
 
 gulp.task('docs-dist-cp',['process-scripts-with-tpl', 'process-styles'], function() {
-    return gulp.src('./dist/**/*')
+    return gulp.src(['./dist/**/*','./bower_components/hr-angular-extend/src/hrAngularExtend.js'])
         .pipe(gulp.dest(options.pagesDir + '/dist'));
 });
 
@@ -104,9 +104,8 @@ gulp.task('docs-clean', function() {
 
 gulp.task('build-docs', ['demo-cp', 'docs-dist-cp', 'docs-mddoc']);
 
-// docs-clean removes git
-//gu-lp.task('docs',['docs-clean'], function(){
-gulp.task('docs', function(){
+
+gulp.task('docs',['docs-clean'], function(){
     return gulp.start('build-docs');
 });
 

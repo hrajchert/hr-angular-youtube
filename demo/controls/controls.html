@@ -1,10 +1,9 @@
-<div ng-controller="ControlsDemoCtrl">
-    <youtube-player width="100%" keep-aspect-ratio video-id="id" ng-model="player1">
+<div ng-controller="ControlsDemoCtrl as ctrl">
+    <youtube-player width="100%" keep-aspect-ratio video-id="ctrl.id" ng-model="ctrl.player">
     </youtube-player>
     <div class="controls">
-        <button ng-click="player1.playVideo()">Play</button>
-        <button ng-click="player1.pauseVideo()">Pause</button>
-        <button ng-show="player1.fullscreenEnabled()" ng-click="player1.requestFullscreen()">Full Screen</button>
-        <input type="text" ng-model="id"></input>
+        <button ng-click="ctrl.player.playVideo()">Play</button>
+        <button ng-click="ctrl.player.pauseVideo()">Pause</button>
+        <input type="text" ng-model="ctrl.id"></input>
     </div>
 </div>

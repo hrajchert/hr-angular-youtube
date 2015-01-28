@@ -4,14 +4,12 @@
     .directive('playerToggleFullscreen',  function() {
         return {
             restrict: 'E',
-            require: '^youtubePlayer',
+            require: '^ytFullscreen',
             templateUrl: '/template/overlay/player-toggle-fullscreen.html',
             transclude: true,
-            link: function(scope, elm, attrs,youtubePlayerCtrl) {
-                youtubePlayerCtrl.getPlayer().then(function(player){
-                    elm.on('click', function() {
-                        player.toggleFullscreen();
-                    });
+            link: function(scope, elm, attrs,fullScreenCtrl) {
+                elm.on('click', function() {
+                    fullScreenCtrl.toggleFullscreen();
                 });
             }
         };

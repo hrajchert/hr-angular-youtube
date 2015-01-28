@@ -1,59 +1,16 @@
-/* global angular, YT, screenfull */
+/* global angular, YT  */
 (function(angular) {
-
-
-
-
-
+    'use strict';
 
     angular.module('hrAngularYoutube')
 
-    .provider('youtube', function youtubeProvider () {
-
-        var defaultOptions = {
-            playerVars: {
-                origin: location.origin + '/',
-                enablejsapi: 1
-            }
-        };
-
-        var autoload = true;
-        this.setAutoLoad = function (auto) {
-            autoload = auto;
-        };
-
-        this.setOptions = function (options) {
-            defaultOptions = options;
-        };
-
-        this.getOptions = function () {
-            return defaultOptions;
-        };
-
-        this.setOption = function (name, value) {
-            defaultOptions[name] = value;
-        };
-
-        this.setPlayerVarOption = function (name, value) {
-            defaultOptions.playerVars[name] = value;
-        };
+    .factory('YoutubePlayer', ['$q', '$interval','$rootScope', 'youtubeReadableTime',
+             'youtubeQualityMap', 'youtubeUuid','YoutubeMarkerList','hrAngularExtend',
+        function ($q, $interval, $rootScope, youtubeReadableTime, youtubeQualityMap,
+                  youtubeUuid, YoutubeMarkerList, hrAngularExtend) {
 
 
-        this.$get = ['$window','$q', '$interval','$rootScope', 'youtubeReadableTime', 'youtubeQualityMap',
-                     'youtubeUuid','YoutubeMarkerList',
-                     function ($window, $q, $interval, $rootScope, youtubeReadableTime, youtubeQualityMap, youtubeUuid, YoutubeMarkerList) {
-            var apiLoaded = $q.defer();
-
-            var apiLoadedPromise = apiLoaded.promise;
-
-            var YoutubePlayer = function(elmOrId, playerOptions) {
-                var options = {};
-                // Override main options
-                angular.extend(options, angular.copy(defaultOptions), playerOptions);
-                // Override player var options
-                options.playerVars = {}; // For some reason if I dont reset this angular.extend doesnt work as expected
-                angular.extend(options.playerVars, angular.copy(defaultOptions.playerVars), playerOptions.playerVars);
-
+            var YoutubePlayer = function(elmOrId, options) {
 
                 this.options = options;
 
@@ -63,16 +20,7 @@
                 op.height = '100%';
 
                 var self = this;
-                if (this.fullscreenEnabled()) {
-                    document.addEventListener(screenfull.raw.fullscreenchange, function() {
-                        if (self.isFullscreen()) {
-                            angular.element(self._fullScreenElem).addClass('fullscreen');
-                        } else {
-                            angular.element(self._fullScreenElem).removeClass('fullscreen');
-                        }
-                        self.emit('fullscreenchange');
-                    });
-                }
+
                 this.player = new YT.Player(elmOrId, op);
 
                 this.markerList = new YoutubeMarkerList();
@@ -99,6 +47,8 @@
 
             };
 
+            hrAngularExtend.factory(YoutubePlayer);
+
             // TODO: Inherit better than these :S once i know if this is the way I want to access the object
             angular.forEach([
                 'loadVideoById', 'loadVideoByUrl', 'cueVideoById', 'cueVideoByUrl', 'cuePlaylist',
@@ -123,11 +73,6 @@
                 return this._element;
             };
 
-
-            // TODO: See how to add a default, or if to make a full-screen directive
-            YoutubePlayer.prototype.setFullScreenElement = function (elm) {
-                this._fullScreenElem = elm;
-            };
 
             YoutubePlayer.prototype.getHumanReadableDuration = function () {
                 return youtubeReadableTime(this.getDuration());
@@ -173,50 +118,6 @@
                 return cancel;
             };
 
-            YoutubePlayer.prototype.requestFullscreen = function () {
-                if (this.fullscreenEnabled()) {
-                    screenfull.request(this._fullScreenElem);
-                    this.emit('fullscreenEnabled');
-                    return true;
-                }
-                return false;
-            };
-
-            YoutubePlayer.prototype.removeFullscreen = function () {
-                if (this.fullscreenEnabled()) {
-                    if (this.isFullscreen()) {
-                        this.toggleFullscreen();
-                    }
-                }
-            };
-            YoutubePlayer.prototype.toggleFullscreen = function () {
-                if (this.fullscreenEnabled()) {
-                    var isFullscreen = screenfull.isFullscreen;
-                    screenfull.toggle(this._fullScreenElem);
-                    if (isFullscreen) {
-                        this.emit('fullscreenDisabled');
-                    } else {
-                        this.emit('fullscreenEnabled');
-                    }
-                    return true;
-                }
-                return false;
-            };
-
-            YoutubePlayer.prototype.isFullscreen = function () {
-                if (this.fullscreenEnabled()) {
-                    return screenfull.isFullscreen;
-                }
-                return false;
-            };
-
-
-            YoutubePlayer.prototype.fullscreenEnabled = function () {
-                if (typeof screenfull !== 'undefined') {
-                    return screenfull.enabled;
-                }
-                return false;
-            };
 
 
             /**
@@ -476,32 +377,10 @@
                 this.player.setPlaybackQuality(q);
             };
 
-            // Youtube callback when API is ready
-            $window.onYouTubeIframeAPIReady = function () {
-                apiLoaded.resolve();
-            };
 
-
-            return {
-                loadPlayer: function (elmOrId, options) {
-                    return apiLoadedPromise.then(function(){
-                        var videoReady = $q.defer();
-                        var player = new YoutubePlayer(elmOrId, options);
-                        player.on('onReady', function() {
-                            videoReady.resolve(player);
-                        });
-                        return videoReady.promise;
-                    });
-
-                },
-                getAutoLoad: function () {
-                    return autoload;
-                }
-
-            };
-        }];
-
-    });
+            return YoutubePlayer;
+        }
+    ]);
 
 
 })(angular);

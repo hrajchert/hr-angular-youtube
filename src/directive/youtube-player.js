@@ -23,7 +23,7 @@
                 videoId: '='
             },
             transclude: true,
-            controller: ['$scope','$q', function($scope, $q) {
+            controller: ['$q', function($q) {
                 var player = $q.defer();
 
                 this.setPlayer = function (p) {
@@ -70,24 +70,26 @@
                 youtubePlayerCtrl.setOverlayElement(elm);
 
                 var $videoDiv = elm[0].querySelector('.hr-yt-video-place-holder');
-                var $outerDiv = angular.element(elm[0].querySelector('.hr-yt-wrapper'));
+//                var $outerDiv = angular.element(elm[0].querySelector('.hr-yt-wrapper'));
                 var $overlayElm = angular.element(elm[0].querySelector('.hr-yt-overlay'));
 
                 var options = {
                     playerVars: {}
                 };
 
-                playerAttrs.forEach(function(a) {
-                    if (typeof attrs[a] !== 'undefined') {
-                        options[a] = attrs[a];
+                playerAttrs.forEach(function(name) {
+                    if (attrs.hasOwnProperty(name)) {
+                        options[name] = attrs[name];
                     }
                 });
-                playerVarAttrs.forEach(function(a) {
-                    if (typeof attrs[a] !== 'undefined') {
-                        options.playerVars[a] = attrs[a];
+                playerVarAttrs.forEach(function(name) {
+                    if (attrs.hasOwnProperty(name)) {
+                        options.playerVars[name] = attrs[name];
                     }
+                });
 
-                });
+                // See if there is a specific player
+                var playerFactoryName = attrs.playerFactory || 'YoutubePlayer';
 
                 var instanceCreated = false;
                 var createVideo = function() {
@@ -100,10 +102,11 @@
                     elm.css('height',convertToUnits(options.height));
                     elm.css('width',convertToUnits(options.width));
 
-                    youtube.loadPlayer($videoDiv, options).then(function(player) {
+
+                    youtube.loadPlayer(playerFactoryName, $videoDiv, options).then(function(player) {
                         youtubePlayerCtrl.setPlayer(player);
 
-                        player.setFullScreenElement($outerDiv[0]);
+//                        player.setFullScreenElement($outerDiv[0]);
                         player.setOverlayElement($overlayElm);
 
                         if (typeof ngModelCtrl !== 'undefined') {

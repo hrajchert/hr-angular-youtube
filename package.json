@@ -1,7 +1,7 @@
 {
   "name": "hr-angular-youtube",
-  "version": "0.0.1",
-  "description": "Angular Youtube ===============",
+  "version": "0.0.2",
+  "description": "Angular Youtube",
   "main": "gulpfile.js",
   "directories": {
     "test": "test"

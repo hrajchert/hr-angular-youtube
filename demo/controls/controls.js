@@ -9,6 +9,6 @@ angular.module('demoControls', ['hrAngularYoutube'])
     youtubeProvider.setPlayerVarOption('disablekb',1);
 }])
 
-.controller('ControlsDemoCtrl', ['$scope', function($scope){
-    $scope.id = 'i_mKY2CQ9Kk';
-}]);
+.controller('ControlsDemoCtrl', function(){
+    this.id = 'i_mKY2CQ9Kk';
+});

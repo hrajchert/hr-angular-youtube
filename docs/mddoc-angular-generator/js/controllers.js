@@ -14,6 +14,16 @@ angular.module('demo')
         $scope.controlsjs = ans.data;
     });
 }])
+
+.controller('FullscreenDemoCtrlRemoveThis', ['$http','$scope', function($http, $scope) {
+    $http.get('demo/fullscreen/fullscreen.html').then(function(ans){
+        $scope.fullscreenhtml = ans.data;
+    });
+    $http.get('demo/fullscreen/fullscreen.js').then(function(ans){
+        $scope.fullscreenjs = ans.data;
+    });
+}])
+
 .controller('OverlayDemoCtrlRemoveThis', ['$http','$scope', function($http, $scope) {
     $http.get('demo/overlay/overlay.html').then(function(ans){
         $scope.overlayhtml = ans.data;

@@ -1,9 +1,8 @@
 /* global angular */
-angular.module('demo', ['ngRoute','demoOverlay','demoControls', 'demoMarker'])
+angular.module('demo', ['ngRoute','demoOverlay','demoControls', 'demoMarker', 'demoFullscreen'])
 // TODO: mgmgmg, ngroute here?
 
 //angular.module('demo', ['demoOverlay', 'demoControls'])
-
 .config(['$routeProvider', function($routeProvider) {
     $routeProvider
     .when('/', {
@@ -18,8 +17,12 @@ angular.module('demo', ['ngRoute','demoOverlay','demoControls', 'demoMarker'])
     .when('/demo/controls', {
         templateUrl: 'demo-controls.html',
         controller: 'ControlsDemoCtrlRemoveThis'
-
     })
+    .when('/demo/fullscreen', {
+        templateUrl: 'demo-fullscreen.html',
+        controller: 'FullscreenDemoCtrlRemoveThis'
+    })
+
     .when('/demo/overlay', {
         templateUrl: 'demo-overlay.html',
         controller: 'OverlayDemoCtrlRemoveThis'
@@ -27,6 +30,9 @@ angular.module('demo', ['ngRoute','demoOverlay','demoControls', 'demoMarker'])
     .when('/demo/marker', {
         templateUrl: 'demo-marker.html',
         controller: 'MarkerDemoCtrlRemoveThis'
+    })
+    .when('/dev/code', {
+        templateUrl: 'code.html',
     });
 }]);
 

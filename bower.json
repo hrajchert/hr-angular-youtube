@@ -1,12 +1,14 @@
 {
   "name": "hr-angular-youtube",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "authors": [
     "Hernan Rajchert <hrajchert@gmail.com>"
   ],
   "description": "Youtube videos with custom configurable controls for Angular.js",
-  "main": ["dist/hr-angular-youtube.js","dist/hr-angular-youtube.css"],
-
+  "main": [
+    "dist/hr-angular-youtube-tpl.js",
+    "dist/hr-angular-youtube.css"
+  ],
   "keywords": [
     "angular",
     "youtube",
@@ -26,5 +28,8 @@
     "test",
     "tests",
     "demo"
-  ]
+  ],
+  "dependencies": {
+    "hr-angular-extend": "*"
+  }
 }

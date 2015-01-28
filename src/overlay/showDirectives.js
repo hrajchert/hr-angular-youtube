@@ -44,43 +44,38 @@
     .directive('showIfFullscreenEnabled', ['$animate', function($animate) {
         return {
             restrict: 'A',
-            require: '^youtubePlayer',
-            link: function(scope, elm, attrs,youtubePlayerCtrl) {
-                // By default hide
-                $animate.addClass(elm, 'ng-hide');
-                youtubePlayerCtrl.getPlayer().then(function(player){
-                    if (player.fullscreenEnabled()) {
-                        $animate.removeClass(elm, 'ng-hide');
-                    } else {
-                        $animate.addClass(elm, 'ng-hide');
-                    }
-                });
+            require: '^ytFullscreen',
+            link: function(scope, elm, attrs,fullScreenCtrl) {
+                if (fullScreenCtrl.fullscreenEnabled()) {
+                    $animate.removeClass(elm, 'ng-hide');
+                } else {
+                    $animate.addClass(elm, 'ng-hide');
+                }
             }
         };
     }])
     .directive('showIfFullscreen', ['$animate', function($animate) {
         return {
             restrict: 'A',
-            require: '^youtubePlayer',
-            link: function(scope, elm, attrs,youtubePlayerCtrl) {
+            require: '^ytFullscreen',
+            link: function(scope, elm, attrs,fullScreenCtrl) {
                 // By default hide
-                $animate.addClass(elm, 'ng-hide');
-                youtubePlayerCtrl.getPlayer().then(function(player){
-                    var hideOrShow = function () {
-                        var show = player.isFullscreen();
-                        if (attrs.showIfFullscreen === 'true') {
-                            show = !show;
-                        }
+//                $animate.addClass(elm, 'ng-hide');
+                var hideOrShow = function () {
+                    var show = fullScreenCtrl.isFullscreen();
+                    if (attrs.showIfFullscreen === 'true') {
+                        show = !show;
+                    }
 
-                        if ( show ) {
-                            $animate.removeClass(elm, 'ng-hide');
-                        } else {
-                            $animate.addClass(elm, 'ng-hide');
-                        }
-                    };
-                    hideOrShow();
-                    player.on('fullscreenchange', hideOrShow);
-                });
+                    if ( show ) {
+                        $animate.removeClass(elm, 'ng-hide');
+                    } else {
+                        $animate.addClass(elm, 'ng-hide');
+                    }
+                };
+                hideOrShow();
+                fullScreenCtrl.onFullscreenChange(hideOrShow);
+//                    player.on('fullscreenchange', hideOrShow);
             }
         };
     }])
