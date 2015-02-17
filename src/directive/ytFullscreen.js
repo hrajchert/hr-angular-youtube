@@ -67,9 +67,9 @@
                 if (this.fullscreenEnabled()) {
                     document.addEventListener(screenfull.raw.fullscreenchange, function() {
                         if (self.isFullscreen()) {
-                            angular.element(self._fullScreenElem).addClass('fullscreen');
+                            angular.element(_elm).addClass('fullscreen');
                         } else {
-                            angular.element(self._fullScreenElem).removeClass('fullscreen');
+                            angular.element(_elm).removeClass('fullscreen');
                         }
                         $scope.$emit('fullscreenchange');
                     });
