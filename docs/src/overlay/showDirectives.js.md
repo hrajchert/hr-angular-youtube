@@ -7,7 +7,7 @@ I don't like this directive. I would prefer to use ng-show directly but I cannot
     "src" : "src/overlay/showDirectives.js",
     "priority" : 1,
     "ref" : {
-        "text" : "showIfFullscreenEnabled"
+        "text" : "showIfMuted"
     }
 %}
 

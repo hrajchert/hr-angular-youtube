@@ -220,99 +220,6 @@
 
 })(angular);
 
-/* global angular, screenfull */
-(function(angular) {
-    angular.module('hrAngularYoutube')
-    .directive('ytFullscreen',['$parse', function($parse) {
-        return {
-            restrict: 'A',
-            require: 'ytFullscreen',
-            controller: ['$scope', function($scope) {
-                var _elm;
-                var self = this;
-                this.setFullScreenElement = function (elm) {
-                    _elm = elm;
-                };
-
-                this.onFullscreenChange = function (handler) {
-                    return $scope.$on('fullscreenchange', handler);
-                };
-
-
-
-                this.requestFullscreen = function () {
-                    if (this.fullscreenEnabled()) {
-                        screenfull.request(_elm);
-                        $scope.$emit('fullscreenEnabled');
-                        return true;
-                    }
-                    return false;
-                };
-
-                this.removeFullscreen = function () {
-                    if (this.fullscreenEnabled()) {
-                        if (this.isFullscreen()) {
-                            this.toggleFullscreen();
-                        }
-                    }
-                };
-
-                this.toggleFullscreen = function () {
-                    if (this.fullscreenEnabled()) {
-                        var isFullscreen = screenfull.isFullscreen;
-                        screenfull.toggle(_elm);
-                        if (isFullscreen) {
-                            $scope.$emit('fullscreenDisabled');
-                        } else {
-                            $scope.$emit('fullscreenEnabled');
-                        }
-                        return true;
-                    }
-                    return false;
-                };
-
-                this.isFullscreen = function () {
-                    if (this.fullscreenEnabled()) {
-                        return screenfull.isFullscreen;
-                    }
-                    return false;
-                };
-
-
-                this.fullscreenEnabled = function () {
-                    if (typeof screenfull !== 'undefined') {
-                        return screenfull.enabled;
-                    }
-                    return false;
-                };
-
-                if (this.fullscreenEnabled()) {
-                    document.addEventListener(screenfull.raw.fullscreenchange, function() {
-                        if (self.isFullscreen()) {
-                            angular.element(_elm).addClass('fullscreen');
-                        } else {
-                            angular.element(_elm).removeClass('fullscreen');
-                        }
-                        $scope.$emit('fullscreenchange');
-                    });
-
-                }
-
-            }],
-            link: function(scope, elm, attrs, ctrl) {
-                // If the directive has a value, add the controller to the scope under that name
-                if (attrs.ytFullscreen && attrs.ytFullscreen !== '') {
-                    var p = $parse(attrs.ytFullscreen);
-                        p.assign(scope, ctrl);
-                }
-                ctrl.setFullScreenElement(elm[0]);
-            }
-
-        };
-    }]);
-})(angular);
-
-
 /* global angular */
 (function(angular) {
     angular.module('hrAngularYoutube')
@@ -904,25 +811,6 @@
 /* global angular */
 (function(angular) {
     angular.module('hrAngularYoutube')
-    .directive('playerToggleFullscreen',  function() {
-        return {
-            restrict: 'E',
-            require: '^ytFullscreen',
-            templateUrl: '/template/overlay/player-toggle-fullscreen.html',
-            transclude: true,
-            link: function(scope, elm, attrs,fullScreenCtrl) {
-                elm.on('click', function() {
-                    fullScreenCtrl.toggleFullscreen();
-                });
-            }
-        };
-    });
-})(angular);
-
-
-/* global angular */
-(function(angular) {
-    angular.module('hrAngularYoutube')
     .directive('playerTotalTime',  function() {
         return {
             restrict: 'EA',
@@ -1026,44 +914,7 @@
         };
     }])
 
-    .directive('showIfFullscreenEnabled', ['$animate', function($animate) {
-        return {
-            restrict: 'A',
-            require: '^ytFullscreen',
-            link: function(scope, elm, attrs,fullScreenCtrl) {
-                if (fullScreenCtrl.fullscreenEnabled()) {
-                    $animate.removeClass(elm, 'ng-hide');
-                } else {
-                    $animate.addClass(elm, 'ng-hide');
-                }
-            }
-        };
-    }])
-    .directive('showIfFullscreen', ['$animate', function($animate) {
-        return {
-            restrict: 'A',
-            require: '^ytFullscreen',
-            link: function(scope, elm, attrs,fullScreenCtrl) {
-                // By default hide
-//                $animate.addClass(elm, 'ng-hide');
-                var hideOrShow = function () {
-                    var show = fullScreenCtrl.isFullscreen();
-                    if (attrs.showIfFullscreen === 'true') {
-                        show = !show;
-                    }
 
-                    if ( show ) {
-                        $animate.removeClass(elm, 'ng-hide');
-                    } else {
-                        $animate.addClass(elm, 'ng-hide');
-                    }
-                };
-                hideOrShow();
-                fullScreenCtrl.onFullscreenChange(hideOrShow);
-//                    player.on('fullscreenchange', hideOrShow);
-            }
-        };
-    }])
 
     .directive('showIfMuted', ['$animate', function($animate) {
         return {

@@ -1,11 +1,22 @@
 {
   "name": "hr-angular-youtube",
-  "version": "0.0.2",
-  "description": "Angular Youtube",
-  "main": "gulpfile.js",
+  "version": "0.0.4",
+  "description": "Youtube videos with custom configurable controls for Angular.js",
+  "main": [
+    "dist/hr-angular-youtube-tpl.js",
+    "dist/hr-angular-youtube.css"
+  ],
+  "license": "MIT",
   "directories": {
     "test": "test"
   },
+  "keywords": [
+    "angular",
+    "youtube",
+    "directive",
+    "video",
+    "html5"
+  ],
   "dependencies": {},
   "devDependencies": {
     "gulp": "~3.8.8",
@@ -26,7 +37,7 @@
     "type": "git",
     "url": "https://hrajchert@github.com/hrajchert/hr-angular-youtube.git"
   },
-  "author": "",
+  "author": "Hernan Rajchert <hrajchert@gmail.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/hrajchert/hr-angular-youtube/issues"

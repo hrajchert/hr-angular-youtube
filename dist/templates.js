@@ -97,19 +97,6 @@ try {
   module = angular.module('hrAngularYoutubeTpls', []);
 }
 module.run(['$templateCache', function($templateCache) {
-  $templateCache.put('/template/overlay/player-toggle-fullscreen.html',
-    '<div style="display: inherit" ng-transclude=""></div>\n' +
-    '');
-}]);
-})();
-
-(function(module) {
-try {
-  module = angular.module('hrAngularYoutubeTpls');
-} catch (e) {
-  module = angular.module('hrAngularYoutubeTpls', []);
-}
-module.run(['$templateCache', function($templateCache) {
   $templateCache.put('/template/overlay/player-volume-horizontal.html',
     '<div ng-click="toggleMute()" class="ng-transclude"></div>\n' +
     '    <div class="hr-yt-volume-hr-bar"\n' +

@@ -41,44 +41,7 @@
         };
     }])
 
-    .directive('showIfFullscreenEnabled', ['$animate', function($animate) {
-        return {
-            restrict: 'A',
-            require: '^ytFullscreen',
-            link: function(scope, elm, attrs,fullScreenCtrl) {
-                if (fullScreenCtrl.fullscreenEnabled()) {
-                    $animate.removeClass(elm, 'ng-hide');
-                } else {
-                    $animate.addClass(elm, 'ng-hide');
-                }
-            }
-        };
-    }])
-    .directive('showIfFullscreen', ['$animate', function($animate) {
-        return {
-            restrict: 'A',
-            require: '^ytFullscreen',
-            link: function(scope, elm, attrs,fullScreenCtrl) {
-                // By default hide
-//                $animate.addClass(elm, 'ng-hide');
-                var hideOrShow = function () {
-                    var show = fullScreenCtrl.isFullscreen();
-                    if (attrs.showIfFullscreen === 'true') {
-                        show = !show;
-                    }
 
-                    if ( show ) {
-                        $animate.removeClass(elm, 'ng-hide');
-                    } else {
-                        $animate.addClass(elm, 'ng-hide');
-                    }
-                };
-                hideOrShow();
-                fullScreenCtrl.onFullscreenChange(hideOrShow);
-//                    player.on('fullscreenchange', hideOrShow);
-            }
-        };
-    }])
 
     .directive('showIfMuted', ['$animate', function($animate) {
         return {
