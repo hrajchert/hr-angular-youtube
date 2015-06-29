@@ -3,8 +3,6 @@ Angular Youtube
 
 > Youtube videos with custom configurable controls for Angular.js
 
-THIS IS A WORK IN PROGRESS AND ITS CHANGING RAPIDLY, USE AT OWN RISK
-
 Check out the demo and documentation [here](http://hrajchert.github.io/hr-angular-youtube)
 
 ## Install
