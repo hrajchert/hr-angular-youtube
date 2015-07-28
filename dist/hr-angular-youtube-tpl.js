@@ -249,6 +249,7 @@ module.run(['$templateCache', function($templateCache) {
 //                        player.setFullScreenElement($outerDiv[0]);
                         player.setOverlayElement($overlayElm);
 
+                        // TODO: I dont like this
                         if (typeof ngModelCtrl !== 'undefined') {
                             ngModelCtrl.$setViewValue(player);
                         }
@@ -1620,7 +1621,8 @@ module.run(['$templateCache', function($templateCache) {
                 });
             };
 
-
+            // TODO: Revisit... I think with the addond of the player factory this
+            // shouldnt be needed
             YoutubePlayer.prototype.setMarkerList = function (list) {
                 this._initializeMarkerListener();
                 this.markerList = list;
@@ -1851,15 +1853,16 @@ module.run(['$templateCache', function($templateCache) {
             this._scope = this._parentScope.$new(true);
             // Create the element from the template
             this.template.then(function(template) {
-                self._elm = $compile(template)(self._scope);
-                // Add it as an overlay
-                if (self._addMethod === 'append') {
-                    self._parentElm.append(self._elm);
-                } else if (self._addMethod === 'prepend') {
-                    self._parentElm.prepend(self._elm);
-                }
+                // Compile the template and get the link function
+                var link = $compile(template);
 
-                // Call the link function to allow logic in the scope
+                // Add it to the DOM as an overlay (append or prepend)
+                self._parentElm[self._addMethod](self._elm);
+
+                // Link it in angular
+                self._elm = link(self._scope);
+
+                // Call the optional marker link function to allow logic in the scope
                 if (typeof self.link === 'function') {
                     self.link(self._scope);
                 }

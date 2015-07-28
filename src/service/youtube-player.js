@@ -284,7 +284,8 @@
                 });
             };
 
-
+            // TODO: Revisit... I think with the addond of the player factory this
+            // shouldnt be needed
             YoutubePlayer.prototype.setMarkerList = function (list) {
                 this._initializeMarkerListener();
                 this.markerList = list;

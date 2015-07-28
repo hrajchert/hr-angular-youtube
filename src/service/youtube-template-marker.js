@@ -49,15 +49,14 @@
             this._scope = this._parentScope.$new(true);
             // Create the element from the template
             this.template.then(function(template) {
-                self._elm = $compile(template)(self._scope);
-                // Add it as an overlay
-                if (self._addMethod === 'append') {
-                    self._parentElm.append(self._elm);
-                } else if (self._addMethod === 'prepend') {
-                    self._parentElm.prepend(self._elm);
-                }
+                // Add the element where its supposed to be
+                var elm = angular.element(template);
+                self._parentElm[self._addMethod](elm);
 
-                // Call the link function to allow logic in the scope
+                // Compile and link it
+                self._elm = $compile(template)(self._scope);
+
+                // Call the optional marker link function to allow logic in the scope
                 if (typeof self.link === 'function') {
                     self.link(self._scope);
                 }
