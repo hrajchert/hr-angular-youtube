@@ -109,6 +109,7 @@
 //                        player.setFullScreenElement($outerDiv[0]);
                         player.setOverlayElement($overlayElm);
 
+                        // TODO: I dont like this
                         if (typeof ngModelCtrl !== 'undefined') {
                             ngModelCtrl.$setViewValue(player);
                         }
