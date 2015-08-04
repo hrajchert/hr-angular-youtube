@@ -11,8 +11,8 @@
     angular.module('hrAngularYoutube')
     .directive('youtubePlayer', ['youtube', function (youtube) {
         var playerAttrs = ['id', 'height', 'width'],
-            playerVarAttrs = ['autohide', 'autoplay', 'cc_load_policy', 'color', 'controls',
-                              'disablekb', 'enablejsapi', 'end', 'fs', 'iv_load_policy',
+            playerVarAttrs = ['autohide', 'autoplay', 'ccLoadPolicy', 'color', 'controls',
+                              'disablekb', 'enablejsapi', 'end', 'fs', 'ivLoadPolicy',
                               'list', 'listType', 'loop', 'modestbranding', 'origin', 'playerapiid',
                               'playlist', 'playsinline', 'rel', 'showinfo', 'start', 'theme'];
         return {
