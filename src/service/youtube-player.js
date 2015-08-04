@@ -51,7 +51,7 @@
 
             // TODO: Inherit better than these :S once i know if this is the way I want to access the object
             angular.forEach([
-                'loadVideoById', 'loadVideoByUrl', 'cueVideoById', 'cueVideoByUrl', 'cuePlaylist',
+                'getOptions', 'loadModule', 'loadVideoById', 'loadVideoByUrl', 'cueVideoById', 'cueVideoByUrl', 'cuePlaylist',
                 'loadPlaylist', 'playVideo', 'pauseVideo', 'stopVideo', 'seekTo', 'clearVideo',
                 'nextVideo', 'previousVideo', 'playVideoAt',
                 'setSize', 'getPlaybackRate', 'setPlaybackRate', 'getAvailablePlaybackRates',
