@@ -40,8 +40,8 @@
     angular.module('hrAngularYoutube')
     .directive('youtubePlayer', ['youtube', function (youtube) {
         var playerAttrs = ['id', 'height', 'width'],
-            playerVarAttrs = ['autohide', 'autoplay', 'cc_load_policy', 'color', 'controls',
-                              'disablekb', 'enablejsapi', 'end', 'fs', 'iv_load_policy',
+            playerVarAttrs = ['autohide', 'autoplay', 'ccLoadPolicy', 'color', 'controls',
+                              'disablekb', 'enablejsapi', 'end', 'fs', 'ivLoadPolicy',
                               'list', 'listType', 'loop', 'modestbranding', 'origin', 'playerapiid',
                               'playlist', 'playsinline', 'rel', 'showinfo', 'start', 'theme'];
         return {
@@ -1145,84 +1145,6 @@
 
 
 })(angular);
-
-/*  angular, screenfull */
-/*
-(function(angular) {
-
-    angular.module('hrAngularYoutube')
-
-    .factory('YoutubePlayerFullscreenMixin',[function () {
-        function YoutubePlayerFullscreenMixin () {
-            var self = this;
-            if (this.fullscreenEnabled()) {
-                document.addEventListener(screenfull.raw.fullscreenchange, function() {
-                    if (self.isFullscreen()) {
-                        angular.element(self._fullScreenElem).addClass('fullscreen');
-                    } else {
-                        angular.element(self._fullScreenElem).removeClass('fullscreen');
-                    }
-                    self.emit('fullscreenchange');
-                });
-            }
-        }
-
-        // TODO: See how to add a default, or if to make a full-screen directive
-        YoutubePlayerFullscreenMixin.prototype.setFullScreenElement = function (elm) {
-            this._fullScreenElem = elm;
-        };
-
-        YoutubePlayerFullscreenMixin.prototype.requestFullscreen = function () {
-            if (this.fullscreenEnabled()) {
-                screenfull.request(this._fullScreenElem);
-                this.emit('fullscreenEnabled');
-                return true;
-            }
-            return false;
-        };
-
-        YoutubePlayerFullscreenMixin.prototype.removeFullscreen = function () {
-            if (this.fullscreenEnabled()) {
-                if (this.isFullscreen()) {
-                    this.toggleFullscreen();
-                }
-            }
-        };
-
-        YoutubePlayerFullscreenMixin.prototype.toggleFullscreen = function () {
-            if (this.fullscreenEnabled()) {
-                var isFullscreen = screenfull.isFullscreen;
-                screenfull.toggle(this._fullScreenElem);
-                if (isFullscreen) {
-                    this.emit('fullscreenDisabled');
-                } else {
-                    this.emit('fullscreenEnabled');
-                }
-                return true;
-            }
-            return false;
-        };
-
-        YoutubePlayerFullscreenMixin.prototype.isFullscreen = function () {
-            if (this.fullscreenEnabled()) {
-                return screenfull.isFullscreen;
-            }
-            return false;
-        };
-
-
-        YoutubePlayerFullscreenMixin.prototype.fullscreenEnabled = function () {
-            if (typeof screenfull !== 'undefined') {
-                return screenfull.enabled;
-            }
-            return false;
-        };
-        return YoutubePlayerFullscreenMixin;
-    }]);
-
-
-})(angular);
-*/
 
 /* global angular, YT  */
 (function(angular) {
