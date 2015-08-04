@@ -1388,7 +1388,7 @@ module.run(['$templateCache', function($templateCache) {
 
             // TODO: Inherit better than these :S once i know if this is the way I want to access the object
             angular.forEach([
-                'loadVideoById', 'loadVideoByUrl', 'cueVideoById', 'cueVideoByUrl', 'cuePlaylist',
+                'getOptions', 'loadModule', 'loadVideoById', 'loadVideoByUrl', 'cueVideoById', 'cueVideoByUrl', 'cuePlaylist',
                 'loadPlaylist', 'playVideo', 'pauseVideo', 'stopVideo', 'seekTo', 'clearVideo',
                 'nextVideo', 'previousVideo', 'playVideoAt',
                 'setSize', 'getPlaybackRate', 'setPlaybackRate', 'getAvailablePlaybackRates',
@@ -1723,13 +1723,24 @@ module.run(['$templateCache', function($templateCache) {
 
 })(angular);
 
-/* global angular */
-(function(angular) {
+(function() {
+    'use strict';
 
+    angular
+        .module('hrAngularYoutube')
+        .factory('youtubeQualityMap', youtubeQualityMapService);
 
-    angular.module('hrAngularYoutube')
+    /**
+     * @ngdoc service
+     * @name hrAngularYoutube.factory:youtubeQualityMap
+     *
+     * @description
+     * TODO: Describe this service
+     *
+     */
+    youtubeQualityMapService.$inject = [];
 
-    .factory('youtubeQualityMap', function () {
+    function youtubeQualityMapService () {
         var map = {
             'hd1080' : '1080p',
             'hd720' : '720p',
@@ -1739,11 +1750,26 @@ module.run(['$templateCache', function($templateCache) {
             'tiny' : '144p',
             'auto' : 'Auto'
         };
+
         var inverseMap = {};
-        var inverse;
-        for (var q in map) {
-            inverse = map[q];
-            inverseMap[inverse] = q;
+
+        initialize();
+
+        return {
+            convertToYoutube: convertToYoutube,
+            convertFromYoutube: convertFromYoutube,
+            convertToYoutubeArray: convertToYoutubeArray
+        };
+
+        ///////////////////////////////////////////
+
+        function initialize () {
+            var inverse;
+            for (var q in map) {
+                inverse = map[q];
+                inverseMap[inverse] = q;
+            }
+
         }
 
         function _doConvertToYoutube(q) {
@@ -1753,29 +1779,53 @@ module.run(['$templateCache', function($templateCache) {
             }
             return ans;
         }
-        return {
-            convertToYoutube : function (q) {
-                return _doConvertToYoutube(q);
-            },
-            convertFromYoutube: function (q) {
-                var ans = inverseMap[q];
-                if (!ans) {
-                    ans = 'default';
-                }
-                return ans;
-            },
-            convertToYoutubeArray : function (arr) {
-                var ans = [];
-                for (var i = 0; i<arr.length; i++) {
-                    ans.push(_doConvertToYoutube(arr[i]));
-                }
-                return ans;
+
+        /**
+         * @ngdoc method
+         * @name convertToYoutube
+         * @methodOf hrAngularYoutube.factory:youtubeQualityMap
+         *
+         * @description
+         * TODO: convertToYoutube description
+        */
+        function convertToYoutube (q) {
+            return _doConvertToYoutube(q);
+        }
+
+        /**
+         * @ngdoc method
+         * @name convertFromYoutube
+         * @methodOf hrAngularYoutube.factory:youtubeQualityMap
+         *
+         * @description
+         * TODO: convertFromYoutube description
+        */
+        function convertFromYoutube (q) {
+            var ans = inverseMap[q];
+            if (!ans) {
+                ans = 'default';
             }
-        };
-    });
+            return ans;
+        }
 
+        /**
+         * @ngdoc method
+         * @name convertToYoutubeArray
+         * @methodOf hrAngularYoutube.factory:youtubeQualityMap
+         *
+         * @description
+         * TODO: convertToYoutubeArray description
+        */
 
-})(angular);
+        function convertToYoutubeArray (arr) {
+            var ans = [];
+            for (var i = 0; i<arr.length; i++) {
+                ans.push(_doConvertToYoutube(arr[i]));
+            }
+            return ans;
+        }
+    }
+})();
 
 /* global angular */
 (function(angular) {
@@ -1853,14 +1903,12 @@ module.run(['$templateCache', function($templateCache) {
             this._scope = this._parentScope.$new(true);
             // Create the element from the template
             this.template.then(function(template) {
-                // Compile the template and get the link function
-                var link = $compile(template);
+                // Add the element where its supposed to be
+                var elm = angular.element(template);
+                self._parentElm[self._addMethod](elm);
 
-                // Add it to the DOM as an overlay (append or prepend)
-                self._parentElm[self._addMethod](self._elm);
-
-                // Link it in angular
-                self._elm = link(self._scope);
+                // Compile and link it
+                self._elm = $compile(template)(self._scope);
 
                 // Call the optional marker link function to allow logic in the scope
                 if (typeof self.link === 'function') {
@@ -1895,26 +1943,6 @@ module.run(['$templateCache', function($templateCache) {
 
         return YoutubeTemplateMarker;
     }]);
-
-
-})(angular);
-
-/* global angular */
-(function(angular) {
-
-
-    angular.module('hrAngularYoutube')
-
-    .factory('youtubeUuid', function () {
-
-        return {
-            getHash : function () {
-                return Math.floor((1 + Math.random()) * 0x10000)
-                                   .toString(16)
-                                   .substring(1);
-            }
-        };
-    });
 
 
 })(angular);
@@ -2000,3 +2028,48 @@ module.run(['$templateCache', function($templateCache) {
 
 
 })(angular);
+
+(function() {
+    'use strict';
+
+    angular
+        .module('hrAngularYoutube')
+        .factory('youtubeUuid', youtubeUuidService);
+
+    /**
+     * @ngdoc service
+     * @name hrAngularYoutube.factory:youtubeUuid
+     *
+     * @description
+     * Provides unique identifier service
+     *
+     */
+    youtubeUuidService.$inject = [];
+
+    function youtubeUuidService () {
+
+        return {
+            getHash: getHash
+        };
+
+        ///////////////////////////////////////////
+
+        function initialize () {
+            console.log(globalServiceVariable);
+        }
+
+        /**
+         * @ngdoc method
+         * @name getHash
+         * @methodOf hrAngularYoutube.factory:youtubeUuid
+         *
+         * @description
+         * Creates a hash string that follows the UUID standard
+        */
+        function getHash () {
+            return Math.floor((1 + Math.random()) * 0x10000)
+                               .toString(16)
+                               .substring(1);
+        }
+    }
+})();

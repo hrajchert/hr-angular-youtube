@@ -1,6 +1,6 @@
 {
   "name": "hr-angular-youtube",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Youtube videos with custom configurable controls for Angular.js",
   "main": [
     "dist/hr-angular-youtube-tpl.js",
@@ -19,7 +19,7 @@
   ],
   "dependencies": {},
   "devDependencies": {
-    "gulp": "~3.8.8",
+    "gulp": "~3.9.0",
     "gulp-autoprefixer": "~1.0.0",
     "gulp-concat": "~2.2.0",
     "gulp-minify-css": "~0.3.5",
