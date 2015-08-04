@@ -1,6 +1,6 @@
 {
   "name": "hr-angular-youtube",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Youtube videos with custom configurable controls for Angular.js",
   "main": [
     "dist/hr-angular-youtube-tpl.js",

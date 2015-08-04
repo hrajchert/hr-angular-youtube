@@ -1908,7 +1908,7 @@ module.run(['$templateCache', function($templateCache) {
                 self._parentElm[self._addMethod](elm);
 
                 // Compile and link it
-                self._elm = $compile(template)(self._scope);
+                self._elm = $compile(elm)(self._scope);
 
                 // Call the optional marker link function to allow logic in the scope
                 if (typeof self.link === 'function') {
