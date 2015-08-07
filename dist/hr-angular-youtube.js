@@ -1707,7 +1707,7 @@
 
             // Make sure we have somewhere to insert it
             if (!this._parentElm) {
-                this._parentElm = this._player.getOverlayElement();
+                this._parentElm = this.player.getOverlayElement();
             }
 
             // Create a new isolated scope

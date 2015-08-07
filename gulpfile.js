@@ -104,10 +104,11 @@ gulp.task('docs-clean', function() {
 
 gulp.task('build-docs', ['demo-cp', 'docs-dist-cp', 'docs-mddoc']);
 
-
 gulp.task('docs',['docs-clean'], function(){
     return gulp.start('build-docs');
 });
+
+gulp.task('build', ['process-scripts-with-tpl']);
 
 gulp.task('watch', function() {
     // This should be process script, but for some reason is not updating :(
