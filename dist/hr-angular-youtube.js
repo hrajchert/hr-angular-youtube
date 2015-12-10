@@ -1110,6 +1110,11 @@
 
 
         YoutubeMarker.prototype.start = function () {
+            // If we are already running, dont do anything
+            if (this._isRunning) {
+                return false;
+            }
+
             // If already fired and we only want to fire once, do nothing
             if (this._runCount > 0 && this.fireOnce ) {
                 return false;
