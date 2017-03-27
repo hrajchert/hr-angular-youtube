@@ -3,6 +3,8 @@ Angular Youtube
 
 > Youtube videos with custom configurable controls for Angular.js
 
+WARNING: This project is being continued as https://github.com/acamica/rx-player
+
 Check out the demo and documentation [here](http://hrajchert.github.io/hr-angular-youtube)
 
 ## Install
